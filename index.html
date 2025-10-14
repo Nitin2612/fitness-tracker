@@ -386,17 +386,48 @@
         function analyzeFood() {
             const foods = document.getElementById('foodList').value.toLowerCase().split(',');
             let tc = 0, tp = 0, tcb = 0, tf = 0;
+            let foundItems = [];
 
             foods.forEach(f => {
-                const qty = (f.match(/\d+/) || [1])[0] || 1;
-                for (let k in foodDB) {
-                    if (f.includes(k)) {
-                        tc += foodDB[k].c * qty / 100;
-                        tp += foodDB[k].p * qty / 100;
-                        tcb += foodDB[k].cb * qty / 100;
-                        tf += foodDB[k].f * qty / 100;
+                f = f.trim();
+                if (!f) return;
+                
+                // Extract quantity
+                const qtyMatch = f.match(/^(\d+(?:\.\d+)?)\s*(g|ml|cup|piece)?/);
+                let qty = 1;
+                let unit = 'piece';
+                
+                if (qtyMatch) {
+                    qty = parseFloat(qtyMatch[1]);
+                    unit = qtyMatch[2] || 'piece';
+                    f = f.substring(qtyMatch[0].length).trim();
+                }
+
+                // Search food database
+                let found = false;
+                for (let key in foodDB) {
+                    if (f.includes(key) || key.includes(f.split(' ')[0])) {
+                        let multiplier = qty;
+                        
+                        // Convert units to 100g/100ml base
+                        if (unit === 'g') multiplier = qty / 100;
+                        else if (unit === 'ml') multiplier = qty / 100;
+                        else if (unit === 'cup') multiplier = qty * 240 / 100;
+                        else if (unit === 'piece') multiplier = qty; // 1 piece = standard serving
+
+                        tc += foodDB[key].c * multiplier;
+                        tp += foodDB[key].p * multiplier;
+                        tcb += foodDB[key].cb * multiplier;
+                        tf += foodDB[key].f * multiplier;
+                        
+                        foundItems.push(`✓ ${qty}${unit} ${key}`);
+                        found = true;
                         break;
                     }
+                }
+
+                if (!found) {
+                    foundItems.push(`❓ ${qty}${unit} ${f} (not in database)`);
                 }
             });
 
@@ -404,6 +435,16 @@
             document.getElementById('fprot').textContent = Math.round(tp);
             document.getElementById('fcarb').textContent = Math.round(tcb);
             document.getElementById('ffat').textContent = Math.round(tf);
+            
+            // Show found items
+            const foodList = document.createElement('div');
+            foodList.style.cssText = 'background: #f0f0f0; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px;';
+            foodList.innerHTML = '<strong>Items Found:</strong><br>' + foundItems.join('<br>');
+            
+            const oldList = document.getElementById('foodRes').querySelector('[style*="background: #f0f0f0"]');
+            if (oldList) oldList.remove();
+            document.getElementById('foodRes').appendChild(foodList);
+            
             document.getElementById('foodRes').classList.add('show');
         }
 
