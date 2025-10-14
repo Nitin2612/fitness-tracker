@@ -3,738 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babu Ne Thana Thaya - Fitness Tracker</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <title>Babu Ne Thana Thaya</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 10px;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 5px;
-            font-size: 28px;
-        }
-        
-        .visitor-count {
-            text-align: center;
-            color: #667eea;
-            font-size: 12px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-            overflow-x: auto;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-size: 13px;
-            font-weight: 600;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            white-space: nowrap;
-        }
-        
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            font-family: inherit;
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: transform 0.2s;
-        }
-        
-        .btn:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-small {
-            padding: 10px;
-            margin: 5px;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        
-        .btn-green { background: #28a745; }
-        .btn-blue { background: #17a2b8; }
-        .btn-red { background: #dc3545; }
-        .btn-gray { background: #6c757d; }
-        
-        .info-box {
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2196F3;
-        }
-        
-        .info-box h3 {
-            color: #004085;
-            margin-bottom: 10px;
-        }
-        
-        .info-box p {
-            color: #004085;
-            font-size: 14px;
-        }
-        
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #667eea;
-            margin: 15px 0 10px 0;
-        }
-        
-        .metric {
-            background: white;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .metric-title {
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .metric-value {
-            color: #666;
-            font-size: 13px;
-            margin-top: 5px;
-        }
-        
-        .score-box {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .score-box h2 {
-            font-size: 48px;
-            margin-bottom: 5px;
-        }
-        
-        .results {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            display: none;
-        }
-        
-        .food-analyzer {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 2px dashed #ff9800;
-        }
-        
-        .food-result {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border-left: 4px solid #28a745;
-            display: none;
-        }
-        
-        .food-result.show {
-            display: block;
-        }
-        
-        .nutrition-summary {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .nutrition-summary div {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        
-        .nutrition-summary strong {
-            display: block;
-            font-size: 20px;
-            color: #667eea;
-            margin-top: 5px;
-        }
-        
-        .step-info {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .step-info p:first-child {
-            color: #667eea;
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-        
-        .step-info p:last-child {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .btn-group button {
-            flex: 1;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 10px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #667eea; margin-bottom: 5px; font-size: 28px; }
+        .visitor { text-align: center; color: #667eea; font-size: 12px; margin-bottom: 20px; font-weight: bold; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; background: none; border: none; font-weight: bold; color: #666; border-bottom: 3px solid transparent; }
+        .tab.active { color: #667eea; border-bottom-color: #667eea; }
+        .content { display: none; }
+        .content.active { display: block; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; font-family: Arial, sans-serif; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .result { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; display: none; }
+        .score-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .score-box h2 { font-size: 48px; }
+        .metric { background: white; padding: 12px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #667eea; }
+        .title { font-size: 16px; font-weight: bold; color: #667eea; margin: 15px 0 10px 0; }
+        .food-analyzer { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px dashed #ff9800; }
+        .food-result { background: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 10px; display: none; }
+        .food-result.show { display: block; }
+        .nutrition-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+        .nutrition-box { background: #f0f0f0; padding: 10px; border-radius: 6px; text-align: center; }
+        .nutrition-box strong { display: block; font-size: 20px; color: #667eea; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>💪 Babu Ne Thana Thaya</h1>
-        <div class="visitor-count">👥 Visitors: <span id="visitorCount">0</span></div>
+        <div class="visitor">👥 Visitors: <span id="count">0</span></div>
         
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('profile')">👤 Profile</button>
-            <button class="tab" onclick="switchTab('tracker')">📝 Daily</button>
-            <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
+            <button class="tab active" onclick="showTab('profile')">👤 Profile</button>
+            <button class="tab" onclick="showTab('daily')">📝 Daily</button>
+            <button class="tab" onclick="showTab('analytics')">📊 Analytics</button>
         </div>
-        
+
         <!-- PROFILE TAB -->
-        <div id="profile" class="tab-content active">
-            <h2 style="color: #667eea; margin-bottom: 15px;">👤 Create Your Profile</h2>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Complete your profile to get personalized nutrition targets</p>
-            
+        <div id="profile" class="content active">
+            <h2 style="color: #667eea; margin-bottom: 15px;">Create Your Profile</h2>
             <form id="profileForm">
                 <div class="input-group">
-                    <label>⚧️ Gender</label>
-                    <select id="profileGender" required>
-                        <option value="">Select gender</option>
+                    <label>Gender</label>
+                    <select id="gender" required>
+                        <option value="">Select</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                     </select>
                 </div>
-                
                 <div class="input-group">
-                    <label>📏 Height (cm)</label>
-                    <input type="number" id="profileHeight" placeholder="e.g., 183" required>
+                    <label>Height (cm)</label>
+                    <input type="number" id="height" placeholder="e.g., 183" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>⚖️ Current Weight (kg)</label>
-                    <input type="number" id="profileWeight" placeholder="e.g., 87" required>
+                    <label>Weight (kg)</label>
+                    <input type="number" id="weight" placeholder="e.g., 87" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>🎯 Target Weight (kg)</label>
-                    <input type="number" id="profileTargetWeight" placeholder="e.g., 75" required>
+                    <label>Target Weight (kg)</label>
+                    <input type="number" id="targetWeight" placeholder="e.g., 75" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>🎂 Age (years)</label>
-                    <input type="number" id="profileAge" placeholder="e.g., 25" required>
+                    <label>Age (years)</label>
+                    <input type="number" id="age" placeholder="e.g., 25" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>🏃 Activity Level</label>
-                    <select id="profileActivity" required>
-                        <option value="">Select activity level</option>
+                    <label>Activity Level</label>
+                    <select id="activity" required>
+                        <option value="">Select</option>
                         <option value="light">Light (1-3 days/week)</option>
                         <option value="moderate">Moderate (3-5 days/week)</option>
                         <option value="active">Active (6-7 days/week)</option>
                     </select>
                 </div>
-                
                 <div class="input-group">
-                    <label>🎯 Goal</label>
-                    <select id="profileGoal" required>
-                        <option value="">Select goal</option>
-                        <option value="weight_loss">Weight Loss</option>
-                        <option value="muscle_gain">Muscle Gain</option>
-                        <option value="maintenance">Maintenance</option>
+                    <label>Goal</label>
+                    <select id="goal" required>
+                        <option value="">Select</option>
+                        <option value="loss">Weight Loss</option>
+                        <option value="gain">Muscle Gain</option>
+                        <option value="maintain">Maintenance</option>
                     </select>
                 </div>
-                
-                <div id="nutritionTargets" style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #667eea; display: none;">
-                    <h4 style="color: #667eea; margin-bottom: 10px;">📊 Your Nutrition Targets</h4>
-                    <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px;">
-                        <span>Calories:</span>
-                        <strong id="targetCalories">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px;">
-                        <span>Protein:</span>
-                        <strong id="targetProtein">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px;">
-                        <span>Carbs:</span>
-                        <strong id="targetCarbs">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px;">
-                        <span>Fats:</span>
-                        <strong id="targetFats">-</strong>
+                <div id="targets" style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #667eea; display: none;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Your Nutrition Targets</h4>
+                    <div style="font-size: 14px;">
+                        <div style="margin: 5px 0;">Calories: <strong id="cal">-</strong></div>
+                        <div style="margin: 5px 0;">Protein: <strong id="prot">-</strong></div>
+                        <div style="margin: 5px 0;">Carbs: <strong id="carb">-</strong></div>
+                        <div style="margin: 5px 0;">Fats: <strong id="fat">-</strong></div>
                     </div>
                 </div>
-                
-                <button type="submit" class="btn">✅ Save & Next Step →</button>
+                <button type="submit">✅ Save & Next →</button>
             </form>
         </div>
-        
-        <!-- DAILY TRACKER TAB -->
-        <div id="tracker" class="tab-content">
-            <div class="step-info">
-                <p>📍 Step 2: Daily Tracking</p>
-                <p>Log your nutrition, workouts & mental health</p>
+
+        <!-- DAILY TAB -->
+        <div id="daily" class="content">
+            <h2 style="color: #667eea; margin-bottom: 15px;">Daily Tracking</h2>
+            <div id="warning" style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;">
+                <p style="color: #856404; font-weight: bold;">⚠️ Complete profile first!</p>
+                <button onclick="showTab('profile')" style="margin-top: 10px;">← Go Back</button>
             </div>
-            
-            <div id="profileWarning" class="info-box" style="display: none;">
-                <h3>⚠️ Complete Profile First</h3>
-                <p>Please complete your profile to continue</p>
-                <button class="btn btn-small btn-gray" onclick="switchTab('profile')">← Back to Profile</button>
-            </div>
-            
+
             <form id="trackerForm">
                 <div class="food-analyzer">
-                    <h3 style="color: #ff9800; margin-bottom: 10px;">🍽️ What Did You Eat Today?</h3>
-                    <div class="input-group">
-                        <label>List foods separated by commas</label>
-                        <textarea id="foodInput" placeholder="e.g., 2 boiled eggs, 1 cup oats, banana, 1 roti, dal"></textarea>
-                    </div>
-                    <button type="button" class="btn btn-small btn-green" onclick="analyzeFoodNutrition()">🔍 Analyze</button>
-                    
-                    <div id="foodResult" class="food-result">
-                        <h4>📊 Nutrition Analysis</h4>
-                        <div class="nutrition-summary">
-                            <div>
-                                <span style="font-size: 12px;">Calories</span>
-                                <strong id="analyzedCalories">0</strong>
-                                <span style="font-size: 11px;">kcal</span>
+                    <h3 style="color: #ff9800; margin-bottom: 10px;">🍽️ What did you eat?</h3>
+                    <textarea id="foodList" placeholder="e.g., 2 eggs, 1 cup oats, banana, 1 roti, dal" style="margin-bottom: 10px;"></textarea>
+                    <button type="button" onclick="analyzeFood()" style="background: #28a745; margin-top: 10px;">🔍 Analyze Food</button>
+                    <div id="foodRes" class="food-result">
+                        <h4>Nutrition Found:</h4>
+                        <div class="nutrition-grid">
+                            <div class="nutrition-box">
+                                <span>Calories</span>
+                                <strong id="fcal">0</strong>
                             </div>
-                            <div>
-                                <span style="font-size: 12px;">Protein</span>
-                                <strong id="analyzedProtein">0</strong>
-                                <span style="font-size: 11px;">g</span>
+                            <div class="nutrition-box">
+                                <span>Protein</span>
+                                <strong id="fprot">0</strong>
                             </div>
-                            <div>
-                                <span style="font-size: 12px;">Carbs</span>
-                                <strong id="analyzedCarbs">0</strong>
-                                <span style="font-size: 11px;">g</span>
+                            <div class="nutrition-box">
+                                <span>Carbs</span>
+                                <strong id="fcarb">0</strong>
                             </div>
-                            <div>
-                                <span style="font-size: 12px;">Fats</span>
-                                <strong id="analyzedFats">0</strong>
-                                <span style="font-size: 11px;">g</span>
+                            <div class="nutrition-box">
+                                <span>Fats</span>
+                                <strong id="ffat">0</strong>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-small" onclick="useFoodAnalysis()">✅ Use These Values</button>
+                        <button type="button" onclick="useFoodData()" style="background: #17a2b8;">✅ Use These</button>
                     </div>
                 </div>
-                
-                <div class="section-title">Or Enter Manually</div>
-                
+
+                <div class="title">Or Enter Manually</div>
+
                 <div class="input-group">
-                    <label>🍽️ Calories (kcal)</label>
-                    <input type="number" id="calories" placeholder="e.g., 1850" required>
+                    <label>Calories (kcal)</label>
+                    <input type="number" id="cal_input" placeholder="1850" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>💪 Protein (g)</label>
-                    <input type="number" id="protein" placeholder="e.g., 165" required>
+                    <label>Protein (g)</label>
+                    <input type="number" id="prot_input" placeholder="165" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>🍚 Carbs (g)</label>
-                    <input type="number" id="carbs" placeholder="e.g., 140" required>
+                    <label>Carbs (g)</label>
+                    <input type="number" id="carb_input" placeholder="140" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>🥑 Fats (g)</label>
-                    <input type="number" id="fats" placeholder="e.g., 50" required>
+                    <label>Fats (g)</label>
+                    <input type="number" id="fat_input" placeholder="50" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>💧 Water (liters)</label>
-                    <input type="number" step="0.1" id="water" placeholder="e.g., 3.5" required>
+                    <label>Water (liters)</label>
+                    <input type="number" step="0.1" id="water_input" placeholder="3.5" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>😴 Sleep (hours)</label>
-                    <input type="number" step="0.5" id="sleep" placeholder="e.g., 7.5" required>
+                    <label>Sleep (hours)</label>
+                    <input type="number" step="0.5" id="sleep_input" placeholder="7.5" required>
                 </div>
-                
                 <div class="input-group">
-                    <label>🏋️ Workout Completed?</label>
-                    <select id="workout" required>
+                    <label>Workout (Yes/No)</label>
+                    <select id="workout_input" required>
                         <option value="yes">Yes</option>
                         <option value="no">No</option>
                     </select>
                 </div>
-                
                 <div class="input-group">
-                    <label>⏱️ Workout Duration (minutes)</label>
-                    <input type="number" id="workoutDuration" placeholder="e.g., 45" min="0">
+                    <label>Workout Duration (min)</label>
+                    <input type="number" id="duration_input" placeholder="45">
                 </div>
-                
                 <div class="input-group">
-                    <label>📚 Study/Work Time (hours)</label>
-                    <input type="number" step="0.5" id="study" placeholder="e.g., 3" required>
+                    <label>Study Time (hours)</label>
+                    <input type="number" step="0.5" id="study_input" placeholder="3" required>
                 </div>
-                
-                <div class="section-title">🧠 Mental Health</div>
-                
+
+                <div class="title">Mood & Energy</div>
                 <div class="input-group">
-                    <label>😊 Mood (1-10)</label>
-                    <input type="range" id="mood" min="1" max="10" value="5" style="padding: 0; height: 10px;">
-                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="moodDisplay">5</div>
+                    <label>Mood (1-10)</label>
+                    <input type="range" id="mood_input" min="1" max="10" value="5" style="padding: 0; height: 8px;">
+                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="moodVal">5</div>
                 </div>
-                
                 <div class="input-group">
-                    <label>😰 Stress (1-10)</label>
-                    <input type="range" id="stress" min="1" max="10" value="5" style="padding: 0; height: 10px;">
-                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="stressDisplay">5</div>
+                    <label>Stress (1-10)</label>
+                    <input type="range" id="stress_input" min="1" max="10" value="5" style="padding: 0; height: 8px;">
+                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="stressVal">5</div>
                 </div>
-                
                 <div class="input-group">
-                    <label>⚡ Energy (1-10)</label>
-                    <input type="range" id="energy" min="1" max="10" value="5" style="padding: 0; height: 10px;">
-                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="energyDisplay">5</div>
+                    <label>Energy (1-10)</label>
+                    <input type="range" id="energy_input" min="1" max="10" value="5" style="padding: 0; height: 8px;">
+                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="energyVal">5</div>
                 </div>
-                
-                <button type="submit" class="btn">🚀 Analyze My Day</button>
+
+                <button type="submit">🚀 Analyze My Day</button>
             </form>
-            
-            <div class="results" id="results"></div>
+
+            <div id="result" class="result"></div>
         </div>
-        
+
         <!-- ANALYTICS TAB -->
-        <div id="analytics" class="tab-content">
-            <div style="text-align: center; padding: 40px; color: #666;">
-                📊 Analytics coming soon! Complete more days of tracking to see graphs.
-            </div>
+        <div id="analytics" class="content">
+            <h2 style="color: #667eea; margin-bottom: 15px;">Analytics</h2>
+            <p style="color: #666; text-align: center; padding: 40px;">📊 Coming soon! Track more days to see your progress graphs.</p>
         </div>
     </div>
 
     <script>
-        // Food Database
-        const foodDatabase = {
-            'egg': { calories: 78, protein: 6, carbs: 0.6, fats: 5 },
-            'boiled egg': { calories: 78, protein: 6, carbs: 0.6, fats: 5 },
-            'oats': { calories: 389, protein: 17, carbs: 67, fats: 7 },
-            'banana': { calories: 105, protein: 1.3, carbs: 27, fats: 0.3 },
-            'roti': { calories: 71, protein: 3, carbs: 15, fats: 0.4 },
-            'chicken': { calories: 165, protein: 31, carbs: 0, fats: 3.6 },
-            'rice': { calories: 130, protein: 2.7, carbs: 28, fats: 0.3 },
-            'dal': { calories: 101, protein: 9, carbs: 18, fats: 0.3 },
-            'paneer': { calories: 265, protein: 18, carbs: 1.2, fats: 20 },
-            'milk': { calories: 42, protein: 3.4, carbs: 5, fats: 1 },
-            'apple': { calories: 95, protein: 0.5, carbs: 25, fats: 0.3 },
-            'orange': { calories: 62, protein: 1.2, carbs: 15, fats: 0.3 }
+        const foodDB = {
+            'egg': {c: 78, p: 6, cb: 0.6, f: 5},
+            'oats': {c: 389, p: 17, cb: 67, f: 7},
+            'banana': {c: 105, p: 1.3, cb: 27, f: 0.3},
+            'roti': {c: 71, p: 3, cb: 15, f: 0.4},
+            'chicken': {c: 165, p: 31, cb: 0, f: 3.6},
+            'rice': {c: 130, p: 2.7, cb: 28, f: 0.3},
+            'dal': {c: 101, p: 9, cb: 18, f: 0.3},
+            'paneer': {c: 265, p: 18, cb: 1.2, f: 20}
         };
 
-        // Initialize
-        window.onload = function() {
-            updateVisitorCount();
+        document.getElementById('mood_input').addEventListener('input', e => document.getElementById('moodVal').textContent = e.target.value);
+        document.getElementById('stress_input').addEventListener('input', e => document.getElementById('stressVal').textContent = e.target.value);
+        document.getElementById('energy_input').addEventListener('input', e => document.getElementById('energyVal').textContent = e.target.value);
+
+        window.onload = () => {
+            updateVisitors();
             loadProfile();
-            setupEventListeners();
+            document.getElementById('profileForm').addEventListener('submit', saveProfile);
+            document.getElementById('trackerForm').addEventListener('submit', submitTracker);
         };
 
-        function updateVisitorCount() {
-            let count = localStorage.getItem('visitorCount') || 0;
-            count = parseInt(count) + 1;
-            localStorage.setItem('visitorCount', count);
-            document.getElementById('visitorCount').textContent = count;
+        function updateVisitors() {
+            let v = localStorage.getItem('v') || 0;
+            v = parseInt(v) + 1;
+            localStorage.setItem('v', v);
+            document.getElementById('count').textContent = v;
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        function showTab(t) {
+            document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+            document.getElementById(t).classList.add('active');
             event.target.classList.add('active');
-            document.getElementById(tab).classList.add('active');
             
-            if (tab === 'tracker') {
-                checkProfile();
-            }
-        }
-
-        function setupEventListeners() {
-            document.getElementById('profileForm').addEventListener('submit', saveProfile);
-            document.getElementById('trackerForm').addEventListener('submit', submitTracking);
-            document.getElementById('mood').addEventListener('input', function() {
-                document.getElementById('moodDisplay').textContent = this.value;
-            });
-            document.getElementById('stress').addEventListener('input', function() {
-                document.getElementById('stressDisplay').textContent = this.value;
-            });
-            document.getElementById('energy').addEventListener('input', function() {
-                document.getElementById('energyDisplay').textContent = this.value;
-            });
+            if (t === 'daily') checkProfile();
         }
 
         function loadProfile() {
-            const saved = localStorage.getItem('userProfile');
-            if (saved) {
-                const profile = JSON.parse(saved);
-                document.getElementById('profileGender').value = profile.gender;
-                document.getElementById('profileHeight').value = profile.height;
-                document.getElementById('profileWeight').value = profile.weight;
-                document.getElementById('profileTargetWeight').value = profile.targetWeight;
-                document.getElementById('profileAge').value = profile.age;
-                document.getElementById('profileActivity').value = profile.activity;
-                document.getElementById('profileGoal').value = profile.goal;
+            const p = localStorage.getItem('p');
+            if (p) {
+                const obj = JSON.parse(p);
+                document.getElementById('gender').value = obj.g;
+                document.getElementById('height').value = obj.h;
+                document.getElementById('weight').value = obj.w;
+                document.getElementById('targetWeight').value = obj.tw;
+                document.getElementById('age').value = obj.a;
+                document.getElementById('activity').value = obj.ac;
+                document.getElementById('goal').value = obj.go;
             }
         }
 
         function saveProfile(e) {
             e.preventDefault();
             
-            const profile = {
-                gender: document.getElementById('profileGender').value,
-                height: parseFloat(document.getElementById('profileHeight').value),
-                weight: parseFloat(document.getElementById('profileWeight').value),
-                targetWeight: parseFloat(document.getElementById('profileTargetWeight').value),
-                age: parseInt(document.getElementById('profileAge').value),
-                activity: document.getElementById('profileActivity').value,
-                goal: document.getElementById('profileGoal').value
-            };
-            
-            // Calculate nutrition targets
-            let bmr;
-            if (profile.gender === 'male') {
-                bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) + 5;
-            } else {
-                bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) - 161;
-            }
+            const g = document.getElementById('gender').value;
+            const h = parseFloat(document.getElementById('height').value);
+            const w = parseFloat(document.getElementById('weight').value);
+            const a = parseInt(document.getElementById('age').value);
+            const ac = document.getElementById('activity').value;
+            const go = document.getElementById('goal').value;
 
-            const activityMultipliers = { light: 1.375, moderate: 1.55, active: 1.725 };
-            const tdee = bmr * (activityMultipliers[profile.activity] || 1.55);
-            let calories = tdee;
+            let bmr = g === 'male' ? (10*w) + (6.25*h) - (5*a) + 5 : (10*w) + (6.25*h) - (5*a) - 161;
+            const mult = {light: 1.375, moderate: 1.55, active: 1.725};
+            let cal = bmr * (mult[ac] || 1.55);
             
-            if (profile.goal === 'weight_loss') calories -= 500;
-            else if (profile.goal === 'muscle_gain') calories += 300;
+            if (go === 'loss') cal -= 500;
+            else if (go === 'gain') cal += 300;
 
-            const protein = profile.gender === 'male' ? profile.weight * 2 : profile.weight * 1.6;
-            const fats = (calories * 0.25) / 9;
-            const carbs = (calories - (protein * 4) - (fats * 9)) / 4;
+            const prot = g === 'male' ? w * 2 : w * 1.6;
+            const fats = (cal * 0.25) / 9;
+            const carbs = (cal - (prot * 4) - (fats * 9)) / 4;
 
-            profile.targets = {
-                calories: Math.round(calories),
-                protein: Math.round(protein),
-                carbs: Math.round(carbs),
-                fats: Math.round(fats)
-            };
+            localStorage.setItem('p', JSON.stringify({
+                g, h, w, tw: document.getElementById('targetWeight').value, a, ac, go,
+                cal: Math.round(cal), prot: Math.round(prot), carbs: Math.round(carbs), fats: Math.round(fats)
+            }));
 
-            localStorage.setItem('userProfile', JSON.stringify(profile));
-            
-            document.getElementById('targetCalories').textContent = profile.targets.calories + ' kcal';
-            document.getElementById('targetProtein').textContent = profile.targets.protein + 'g';
-            document.getElementById('targetCarbs').textContent = profile.targets.carbs + 'g';
-            document.getElementById('targetFats').textContent = profile.targets.fats + 'g';
-            document.getElementById('nutritionTargets').style.display = 'block';
-            
-            setTimeout(() => switchTab('tracker'), 500);
+            document.getElementById('cal').textContent = Math.round(cal);
+            document.getElementById('prot').textContent = Math.round(prot);
+            document.getElementById('carb').textContent = Math.round(carbs);
+            document.getElementById('fat').textContent = Math.round(fats);
+            document.getElementById('targets').style.display = 'block';
+
+            setTimeout(() => {
+                document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
+                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+                document.getElementById('daily').classList.add('active');
+                document.querySelectorAll('.tab')[1].classList.add('active');
+            }, 500);
         }
 
         function checkProfile() {
-            const profile = localStorage.getItem('userProfile');
-            if (!profile) {
-                document.getElementById('profileWarning').style.display = 'block';
+            if (!localStorage.getItem('p')) {
+                document.getElementById('warning').style.display = 'block';
             } else {
-                document.getElementById('profileWarning').style.display = 'none';
+                document.getElementById('warning').style.display = 'none';
             }
         }
 
-        function analyzeFoodNutrition() {
-            const foodInput = document.getElementById('foodInput').value.trim();
-            if (!foodInput) {
-                alert('Please enter what you ate');
-                return;
-            }
+        function analyzeFood() {
+            const foods = document.getElementById('foodList').value.toLowerCase().split(',');
+            let tc = 0, tp = 0, tcb = 0, tf = 0;
 
-            const items = foodInput.split(',').map(item => item.trim().toLowerCase());
-            let totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFats = 0;
-
-            items.forEach(item => {
-                const quantity = (item.match(/\d+/g) || [1])[0] || 1;
-                
-                for (const [key, nutrition] of Object.entries(foodDatabase)) {
-                    if (item.includes(key)) {
-                        totalCalories += nutrition.calories * quantity / 100;
-                        totalProtein += nutrition.protein * quantity / 100;
-                        totalCarbs += nutrition.carbs * quantity / 100;
-                        totalFats += nutrition.fats * quantity / 100;
+            foods.forEach(f => {
+                const qty = (f.match(/\d+/) || [1])[0] || 1;
+                for (let k in foodDB) {
+                    if (f.includes(k)) {
+                        tc += foodDB[k].c * qty / 100;
+                        tp += foodDB[k].p * qty / 100;
+                        tcb += foodDB[k].cb * qty / 100;
+                        tf += foodDB[k].f * qty / 100;
                         break;
                     }
                 }
             });
 
-            document.getElementById('analyzedCalories').textContent = Math.round(totalCalories);
-            document.getElementById('analyzedProtein').textContent = Math.round(totalProtein);
-            document.getElementById('analyzedCarbs').textContent = Math.round(totalCarbs);
-            document.getElementById('analyzedFats').textContent = Math.round(totalFats);
-            document.getElementById('foodResult').classList.add('show');
+            document.getElementById('fcal').textContent = Math.round(tc);
+            document.getElementById('fprot').textContent = Math.round(tp);
+            document.getElementById('fcarb').textContent = Math.round(tcb);
+            document.getElementById('ffat').textContent = Math.round(tf);
+            document.getElementById('foodRes').classList.add('show');
         }
 
-        function useFoodAnalysis() {
-            document.getElementById('calories').value = document.getElementById('analyzedCalories').textContent;
-            document.getElementById('protein').value = document.getElementById('analyzedProtein').textContent;
-            document.getElementById('carbs').value = document.getElementById('analyzedCarbs').textContent;
-            document.getElementById('fats').value = document.getElementById('analyzedFats').textContent;
-            alert('✅ Values added!');
+        function useFoodData() {
+            document.getElementById('cal_input').value = document.getElementById('fcal').textContent;
+            document.getElementById('prot_input').value = document.getElementById('fprot').textContent;
+            document.getElementById('carb_input').value = document.getElementById('fcarb').textContent;
+            document.getElementById('fat_input').value = document.getElementById('ffat').textContent;
+            alert('✅ Food data added!');
         }
 
-        function submitTracking(e) {
+        function submitTracker(e) {
             e.preventDefault();
 
-            const data = {
-                date: new Date().toISOString(),
-                calories: parseFloat(document.getElementById('calories').value),
-                protein: parseFloat(document.getElementById('protein').value),
-                carbs: parseFloat(document.getElementById('carbs').value),
-                fats: parseFloat(document.getElementById('fats').value),
-                water: parseFloat(document.getElementById('water').value),
-                sleep: parseFloat(document.getElementById('sleep').value),
-                workout: document.getElementById('workout').value === 'yes',
-                workoutDuration: parseFloat(document.getElementById('workoutDuration').value) || 0,
-                study: parseFloat(document.getElementById('study').value),
-                mood: parseInt(document.getElementById('mood').value),
-                stress: parseInt(document.getElementById('stress').value),
-                energy: parseInt(document.getElementById('energy').value)
-            };
+            const cal = parseFloat(document.getElementById('cal_input').value);
+            const prot = parseFloat(document.getElementById('prot_input').value);
+            const mood = parseInt(document.getElementById('mood_input').value);
+            const stress = parseInt(document.getElementById('stress_input').value);
+            const energy = parseInt(document.getElementById('energy_input').value);
+            const wo = document.getElementById('workout_input').value === 'yes';
 
-            let score = (data.mood * 10 + (11 - data.stress) * 10 + data.energy * 10) / 3;
-            if (data.workout) score += 20;
+            let score = (mood * 10 + (11 - stress) * 10 + energy * 10) / 3;
+            if (wo) score += 20;
 
-            let html = `
+            const html = `
                 <div class="score-box">
                     <h2>${Math.round(score)}/100</h2>
                     <p>Today's Score</p>
                 </div>
-
-                <div class="section-title">📊 Today's Nutrition</div>
-                <div class="metric">
-                    <div class="metric-title">🍽️ Calories: ${data.calories} kcal</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-title">💪 Protein: ${data.protein}g</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-title">🍚 Carbs: ${data.carbs}g</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-title">🥑 Fats: ${data.fats}g</div>
-                </div>
-
-                <div class="section-title">🧠 Mental Health</div>
-                <div class="metric">
-                    <div class="metric-title">😊 Mood: ${data.mood}/10</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-title">😰 Stress: ${data.stress}/10</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-title">⚡ Energy: ${data.energy}/10</div>
-                </div>
-
-                <div class="section-title">💪 Fitness</div>
-                <div class="metric">
-                    <div class="metric-title">🏋️ Workout: ${data.workout ? '✅ Completed (' + data.workoutDuration + ' min)' : '❌ Not Done'}</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-title">📚 Study: ${data.study} hours</div>
-                </div>
+                <div class="title">📊 Nutrition</div>
+                <div class="metric">🍽️ Calories: ${cal} kcal</div>
+                <div class="metric">💪 Protein: ${prot}g</div>
+                <div class="metric">🍚 Carbs: ${document.getElementById('carb_input').value}g</div>
+                <div class="metric">🥑 Fats: ${document.getElementById('fat_input').value}g</div>
+                <div class="title">🧠 Mental</div>
+                <div class="metric">😊 Mood: ${mood}/10 | 😰 Stress: ${stress}/10 | ⚡ Energy: ${energy}/10</div>
+                <div class="title">💪 Fitness</div>
+                <div class="metric">🏋️ Workout: ${wo ? '✅ Yes (' + document.getElementById('duration_input').value + ' min)' : '❌ No'}</div>
+                <div class="metric">📚 Study: ${document.getElementById('study_input').value} hours</div>
             `;
 
-            document.getElementById('results').innerHTML = html;
-            document.getElementById('results').style.display = 'block';
-
-            const history = JSON.parse(localStorage.getItem('progressHistory') || '[]');
-            history
+            document.getElementById('result').innerHTML = html;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('trackerForm').reset();
+            document.getElementById('result').scrollIntoView({behavior: 'smooth'});
+        }
+    </script>
+</body>
+</html>
