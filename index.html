@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness & Study Tracker</title>
+    <title>AI Fitness & Mental Wellness Tracker</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
@@ -38,23 +38,25 @@
         
         .tabs {
             display: flex;
-            gap: 10px;
+            gap: 5px;
             margin-bottom: 20px;
             border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
         }
         
         .tab {
             flex: 1;
-            padding: 12px;
+            padding: 12px 8px;
             text-align: center;
             cursor: pointer;
             background: none;
             border: none;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: #666;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            white-space: nowrap;
         }
         
         .tab.active {
@@ -82,16 +84,22 @@
             font-size: 14px;
         }
         
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
             transition: border 0.3s;
+            font-family: inherit;
         }
         
-        input:focus, select:focus {
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -123,6 +131,8 @@
         .btn-share { background: #28a745; }
         .btn-download { background: #17a2b8; }
         .btn-clear { background: #dc3545; }
+        .btn-profile { background: #6c757d; }
+        .btn-analyze { background: #ff9800; }
         
         .results {
             margin-top: 20px;
@@ -164,6 +174,12 @@
             margin-bottom: 5px;
         }
         
+        .metric-value {
+            color: #666;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
         .status {
             display: inline-block;
             padding: 4px 8px;
@@ -197,6 +213,15 @@
             margin-bottom: 8px;
             border-radius: 6px;
             color: #856404;
+        }
+        
+        .recommendation {
+            background: #e7f3ff;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            color: #004085;
+            border-left: 4px solid #004085;
         }
         
         .day-info {
@@ -257,30 +282,317 @@
         
         .btn-group button {
             flex: 1;
-            min-width: 120px;
+            min-width: 100px;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .info-box h3 {
+            color: #004085;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .info-box p {
+            color: #004085;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .mental-health-scale {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        
+        .scale-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            margin: 0 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            background: #f0f0f0;
+            transition: all 0.3s;
+        }
+        
+        .scale-item:hover {
+            background: #e0e0e0;
+        }
+        
+        .scale-item.selected {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .ai-feedback {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            margin: 15px 0;
+        }
+        
+        .ai-feedback h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .ai-feedback p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .profile-setup {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .nutrition-targets {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #667eea;
+        }
+        
+        .nutrition-targets h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .nutrition-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .food-analyzer {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px dashed #ff9800;
+        }
+        
+        .food-result {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .food-result h4 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        .nutrition-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .nutrition-summary div {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .nutrition-summary strong {
+            display: block;
+            font-size: 20px;
+            color: #667eea;
+            margin-top: 5px;
+        }
+        
+        .food-list {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎯 Fitness & Study Tracker</h1>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('tracker')">📝 Tracker</button>
-            <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
+        <h1>💪 Babu Ne Thana Thaya</h1>
+        <div style="text-align: center; color: #667eea; font-size: 12px; margin-bottom: 15px;">
+            👥 Visitors: <strong id="visitorCount">0</strong>
         </div>
         
-        <!-- TRACKER TAB -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('tracker')">📝 Daily</button>
+            <button class="tab" onclick="switchTab('profile')">👤 Profile</button>
+            <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
+            <button class="tab" onclick="switchTab('ai-coach')">🤖 AI Coach</button>
+        </div>
+        
+        <!-- PROFILE SETUP TAB -->
+        <div id="profile" class="tab-content">
+            <h2 style="color: #667eea; margin-bottom: 15px;">Personal Profile</h2>
+            
+            <div class="input-group">
+                <label>⚧️ Gender</label>
+                <select id="profileGender" onchange="saveProfile()">
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>📏 Height (cm)</label>
+                <input type="number" id="profileHeight" placeholder="e.g., 183" onchange="saveProfile()">
+            </div>
+            
+            <div class="input-group">
+                <label>⚖️ Current Weight (kg)</label>
+                <input type="number" id="profileWeight" placeholder="e.g., 87" onchange="saveProfile()">
+            </div>
+            
+            <div class="input-group">
+                <label>🎯 Target Weight (kg)</label>
+                <input type="number" id="profileTargetWeight" placeholder="e.g., 75" onchange="saveProfile()">
+            </div>
+            
+            <div class="input-group">
+                <label>🎂 Age (years)</label>
+                <input type="number" id="profileAge" placeholder="e.g., 25" onchange="saveProfile()">
+            </div>
+            
+            <div class="input-group">
+                <label>🏃 Activity Level</label>
+                <select id="profileActivity" onchange="saveProfile()">
+                    <option value="">Select activity level</option>
+                    <option value="sedentary">Sedentary (little/no exercise)</option>
+                    <option value="light">Light (1-3 days/week)</option>
+                    <option value="moderate">Moderate (3-5 days/week)</option>
+                    <option value="active">Active (6-7 days/week)</option>
+                    <option value="very_active">Very Active (athlete/physical job)</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>🎯 Primary Goal</label>
+                <select id="profileGoal" onchange="saveProfile()">
+                    <option value="">Select goal</option>
+                    <option value="weight_loss">Weight Loss</option>
+                    <option value="muscle_gain">Muscle Gain</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="athletic">Athletic Performance</option>
+                </select>
+            </div>
+            
+            <div id="nutritionTargets" class="nutrition-targets hidden">
+                <h4>📊 Your Personalized Nutrition Targets</h4>
+                <div class="nutrition-item">
+                    <span>Daily Calories:</span>
+                    <strong id="targetCalories">-</strong>
+                </div>
+                <div class="nutrition-item">
+                    <span>Protein:</span>
+                    <strong id="targetProtein">-</strong>
+                </div>
+                <div class="nutrition-item">
+                    <span>Carbs:</span>
+                    <strong id="targetCarbs">-</strong>
+                </div>
+                <div class="nutrition-item">
+                    <span>Fats:</span>
+                    <strong id="targetFats">-</strong>
+                </div>
+                <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                    <em>* Based on WHO/AND guidelines and adjusted for your workout type</em>
+                </p>
+            </div>
+            
+            <button class="btn" onclick="switchTab('tracker')">✅ Save & Start Tracking</button>
+        </div>
+        
+        <!-- DAILY TRACKER TAB -->
         <div id="tracker" class="tab-content active">
             <div class="day-info" id="dayInfo"></div>
+            
+            <div id="profileWarning" class="info-box">
+                <h3>⚠️ Setup Required</h3>
+                <p>Please complete your profile first for personalized nutrition targets and AI recommendations.</p>
+                <button class="btn btn-small btn-profile" onclick="switchTab('profile')">Complete Profile</button>
+            </div>
             
             <div class="btn-group">
                 <button onclick="shareApp()" class="btn btn-small btn-share">📤 Share</button>
                 <button onclick="saveReport()" class="btn btn-small btn-download">💾 Report</button>
-                <button onclick="clearData()" class="btn btn-small btn-clear">🗑️ Clear Data</button>
+                <button onclick="clearData()" class="btn btn-small btn-clear">🗑️ Clear</button>
             </div>
             
             <form id="trackerForm">
+                <!-- FOOD ANALYZER -->
+                <div class="food-analyzer">
+                    <h3 style="color: #ff9800; margin-bottom: 10px;">🍽️ Food Analyzer</h3>
+                    <p style="font-size: 13px; margin-bottom: 10px; color: #666;">
+                        List everything you ate today, separated by commas
+                    </p>
+                    <div class="input-group">
+                        <label>What did you eat today?</label>
+                        <textarea id="foodInput" placeholder="e.g., 2 boiled eggs, 1 cup oats, 100g chicken breast, 1 apple, 2 roti, dal, brown rice, paneer bhurji"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-small btn-analyze" onclick="analyzeFoodNutrition()">🔍 Analyze Nutrition</button>
+                    
+                    <div id="foodAnalysisResult" class="food-result hidden">
+                        <h4>📊 Nutrition Analysis</h4>
+                        <div class="nutrition-summary">
+                            <div>
+                                <span style="font-size: 12px; color: #666;">Calories</span>
+                                <strong id="analyzedCalories">0</strong>
+                                <span style="font-size: 11px;">kcal</span>
+                            </div>
+                            <div>
+                                <span style="font-size: 12px; color: #666;">Protein</span>
+                                <strong id="analyzedProtein">0</strong>
+                                <span style="font-size: 11px;">g</span>
+                            </div>
+                            <div>
+                                <span style="font-size: 12px; color: #666;">Carbs</span>
+                                <strong id="analyzedCarbs">0</strong>
+                                <span style="font-size: 11px;">g</span>
+                            </div>
+                            <div>
+                                <span style="font-size: 12px; color: #666;">Fats</span>
+                                <strong id="analyzedFats">0</strong>
+                                <span style="font-size: 11px;">g</span>
+                            </div>
+                        </div>
+                        <div class="food-list">
+                            <strong>Items detected:</strong>
+                            <div id="foodItems"></div>
+                        </div>
+                        <button type="button" class="btn btn-small" onclick="useFoodAnalysis()">✅ Use These Values</button>
+                    </div>
+                </div>
+                
+                <!-- MANUAL NUTRITION ENTRY -->
+                <div class="section-title">Or Enter Manually</div>
+                
                 <div class="input-group">
                     <label>🍽️ Calories (kcal)</label>
                     <input type="number" id="calories" placeholder="e.g., 1850" required>
@@ -313,18 +625,94 @@
                 
                 <div class="input-group">
                     <label>🏋️ Workout Completed?</label>
-                    <select id="workout">
+                    <select id="workout" onchange="toggleWorkoutType()">
                         <option value="yes">Yes</option>
                         <option value="no">No</option>
                     </select>
                 </div>
                 
+                <div class="input-group" id="workoutTypeGroup">
+                    <label>💪 Workout Type</label>
+                    <select id="workoutType">
+                        <option value="">Select workout type</option>
+                        <option value="strength">Strength Training</option>
+                        <option value="cardio">Cardio/Running</option>
+                        <option value="hiit">HIIT</option>
+                        <option value="yoga">Yoga/Flexibility</option>
+                        <option value="sports">Sports</option>
+                        <option value="mixed">Mixed/Full Body</option>
+                    </select>
+                </div>
+                
+                <div class="input-group" id="workoutDurationGroup">
+                    <label>⏱️ Workout Duration (minutes)</label>
+                    <input type="number" id="workoutDuration" placeholder="e.g., 45" min="0">
+                </div>
+                
                 <div class="input-group">
-                    <label>📚 Study Time (hours)</label>
+                    <label>📚 Study/Work Time (hours)</label>
                     <input type="number" step="0.5" id="study" placeholder="e.g., 3" required>
                 </div>
                 
-                <button type="submit" class="btn">Analyze Progress</button>
+                <div class="section-title">🧠 Mental Health Check</div>
+                
+                <div class="input-group">
+                    <label>😊 Overall Mood (1-10)</label>
+                    <div class="mental-health-scale" id="moodScale">
+                        <div class="scale-item" onclick="selectScale('mood', 1)">1<br>😢</div>
+                        <div class="scale-item" onclick="selectScale('mood', 2)">2</div>
+                        <div class="scale-item" onclick="selectScale('mood', 3)">3</div>
+                        <div class="scale-item" onclick="selectScale('mood', 4)">4</div>
+                        <div class="scale-item" onclick="selectScale('mood', 5)">5<br>😐</div>
+                        <div class="scale-item" onclick="selectScale('mood', 6)">6</div>
+                        <div class="scale-item" onclick="selectScale('mood', 7)">7</div>
+                        <div class="scale-item" onclick="selectScale('mood', 8)">8</div>
+                        <div class="scale-item" onclick="selectScale('mood', 9)">9</div>
+                        <div class="scale-item" onclick="selectScale('mood', 10)">10<br>😄</div>
+                    </div>
+                    <input type="hidden" id="mood" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>😰 Stress Level (1-10)</label>
+                    <div class="mental-health-scale" id="stressScale">
+                        <div class="scale-item" onclick="selectScale('stress', 1)">1<br>😌</div>
+                        <div class="scale-item" onclick="selectScale('stress', 2)">2</div>
+                        <div class="scale-item" onclick="selectScale('stress', 3)">3</div>
+                        <div class="scale-item" onclick="selectScale('stress', 4)">4</div>
+                        <div class="scale-item" onclick="selectScale('stress', 5)">5<br>😐</div>
+                        <div class="scale-item" onclick="selectScale('stress', 6)">6</div>
+                        <div class="scale-item" onclick="selectScale('stress', 7)">7</div>
+                        <div class="scale-item" onclick="selectScale('stress', 8)">8</div>
+                        <div class="scale-item" onclick="selectScale('stress', 9)">9</div>
+                        <div class="scale-item" onclick="selectScale('stress', 10)">10<br>😫</div>
+                    </div>
+                    <input type="hidden" id="stress" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>⚡ Energy Level (1-10)</label>
+                    <div class="mental-health-scale" id="energyScale">
+                        <div class="scale-item" onclick="selectScale('energy', 1)">1<br>🔋</div>
+                        <div class="scale-item" onclick="selectScale('energy', 2)">2</div>
+                        <div class="scale-item" onclick="selectScale('energy', 3)">3</div>
+                        <div class="scale-item" onclick="selectScale('energy', 4)">4</div>
+                        <div class="scale-item" onclick="selectScale('energy', 5)">5<br>⚡</div>
+                        <div class="scale-item" onclick="selectScale('energy', 6)">6</div>
+                        <div class="scale-item" onclick="selectScale('energy', 7)">7</div>
+                        <div class="scale-item" onclick="selectScale('energy', 8)">8</div>
+                        <div class="scale-item" onclick="selectScale('energy', 9)">9</div>
+                        <div class="scale-item" onclick="selectScale('energy', 10)">10<br>⚡⚡</div>
+                    </div>
+                    <input type="hidden" id="energy" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>💭 How are you feeling today? (Optional)</label>
+                    <textarea id="feelings" placeholder="Share your thoughts, challenges, or wins"></textarea>
+                </div>
+                
+                <button type="submit" class="btn">🚀 Analyze My Day</button>
             </form>
             
             <div class="results" id="results"></div>
@@ -334,36 +722,108 @@
         <div id="analytics" class="tab-content">
             <div id="analyticsContent"></div>
         </div>
+        
+        <!-- AI COACH TAB -->
+        <div id="ai-coach" class="tab-content">
+            <div id="aiCoachContent">
+                <div class="no-data">🤖 Complete at least one day of tracking to receive AI-powered insights!</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const goals = {
-            calories: { min: 1800, max: 2000, target: 1900 },
-            protein: { min: 160, max: 180, target: 170 },
-            carbs: { min: 130, max: 150, target: 140 },
-            fats: { min: 45, max: 55, target: 50 },
-            water: { target: 3.5 },
-            sleep: { min: 7, max: 8, target: 7.5 },
-            study: { target: 3 }
-        };
-
-        const workoutSchedule = {
-            'Monday': 'Full Body Strength + Cardio',
-            'Tuesday': 'Abs + HIIT',
-            'Wednesday': 'Upper Body',
-            'Thursday': 'Abs + Core',
-            'Friday': 'Leg Day + Cardio',
-            'Saturday': 'HIIT + Abs',
-            'Sunday': 'Active Rest'
+        let userProfile = {};
+        let selectedScales = { mood: null, stress: null, energy: null };
+        let charts = {};
+        
+        // Comprehensive food database with nutrition per 100g/100ml or per item
+        const foodDatabase = {
+            // Eggs & Dairy
+            'egg': { name: 'Egg (1 whole)', calories: 78, protein: 6, carbs: 0.6, fats: 5, unit: 'piece' },
+            'egg white': { name: 'Egg White (1)', calories: 17, protein: 3.6, carbs: 0.2, fats: 0.1, unit: 'piece' },
+            'egg yolk': { name: 'Egg Yolk (1)', calories: 55, protein: 2.7, carbs: 0.6, fats: 4.5, unit: 'piece' },
+            'boiled egg': { name: 'Boiled Egg (1)', calories: 78, protein: 6, carbs: 0.6, fats: 5, unit: 'piece' },
+            'paneer': { name: 'Paneer', calories: 265, protein: 18, carbs: 1.2, fats: 20, unit: '100g' },
+            'milk': { name: 'Milk', calories: 42, protein: 3.4, carbs: 5, fats: 1, unit: '100ml' },
+            'curd': { name: 'Curd/Yogurt', calories: 60, protein: 3.5, carbs: 4.7, fats: 3.3, unit: '100g' },
+            'yogurt': { name: 'Yogurt', calories: 60, protein: 3.5, carbs: 4.7, fats: 3.3, unit: '100g' },
+            'cheese': { name: 'Cheese', calories: 402, protein: 25, carbs: 1.3, fats: 33, unit: '100g' },
+            
+            // Grains & Bread
+            'rice': { name: 'Cooked Rice', calories: 130, protein: 2.7, carbs: 28, fats: 0.3, unit: '100g' },
+            'brown rice': { name: 'Brown Rice', calories: 112, protein: 2.6, carbs: 24, fats: 0.9, unit: '100g' },
+            'roti': { name: 'Roti (1 medium)', calories: 71, protein: 3, carbs: 15, fats: 0.4, unit: 'piece' },
+            'chapati': { name: 'Chapati (1)', calories: 71, protein: 3, carbs: 15, fats: 0.4, unit: 'piece' },
+            'bread': { name: 'Bread (1 slice)', calories: 80, protein: 4, carbs: 14, fats: 1, unit: 'slice' },
+            'oats': { name: 'Oats', calories: 389, protein: 17, carbs: 67, fats: 7, unit: '100g' },
+            
+            // Meat & Protein
+            'chicken': { name: 'Chicken Breast', calories: 165, protein: 31, carbs: 0, fats: 3.6, unit: '100g' },
+            'chicken breast': { name: 'Chicken Breast', calories: 165, protein: 31, carbs: 0, fats: 3.6, unit: '100g' },
+            'fish': { name: 'Fish', calories: 100, protein: 20, carbs: 0, fats: 1, unit: '100g' },
+            'meat': { name: 'Lean Meat', calories: 250, protein: 26, carbs: 0, fats: 15, unit: '100g' },
+            'mutton': { name: 'Mutton', calories: 294, protein: 25, carbs: 0, fats: 21, unit: '100g' },
+            
+            // Legumes & Dal
+            'dal': { name: 'Dal (cooked)', calories: 101, protein: 9, carbs: 18, fats: 0.3, unit: '100g' },
+            'lentils': { name: 'Lentils (cooked)', calories: 116, protein: 9, carbs: 20, fats: 0.4, unit: '100g' },
+            'chickpeas': { name: 'Chickpeas', calories: 164, protein: 9, carbs: 27, fats: 3, unit: '100g' },
+            'beans': { name: 'Beans', calories: 127, protein: 9, carbs: 23, fats: 0.5, unit: '100g' },
+            
+            // Vegetables
+            'spinach': { name: 'Spinach', calories: 23, protein: 2.7, carbs: 3.6, fats: 0.4, unit: '100g' },
+            'broccoli': { name: 'Broccoli', calories: 34, protein: 2.8, carbs: 7, fats: 0.4, unit: '100g' },
+            'carrot': { name: 'Carrot', calories: 41, protein: 0.9, carbs: 10, fats: 0.2, unit: '100g' },
+            'tomato': { name: 'Tomato', calories: 18, protein: 0.9, carbs: 3.9, fats: 0.2, unit: '100g' },
+            'onion': { name: 'Onion', calories: 40, protein: 1.1, carbs: 9, fats: 0.1, unit: '100g' },
+            'cucumber': { name: 'Cucumber', calories: 16, protein: 0.7, carbs: 3.6, fats: 0.1, unit: '100g' },
+            'potato': { name: 'Potato (boiled)', calories: 77, protein: 2, carbs: 17, fats: 0.1, unit: '100g' },
+            'sweet potato': { name: 'Sweet Potato', calories: 86, protein: 1.6, carbs: 20, fats: 0.1, unit: '100g' },
+            
+            // Fruits
+            'apple': { name: 'Apple (1 medium)', calories: 95, protein: 0.5, carbs: 25, fats: 0.3, unit: 'piece' },
+            'banana': { name: 'Banana (1 medium)', calories: 105, protein: 1.3, carbs: 27, fats: 0.3, unit: 'piece' },
+            'orange': { name: 'Orange (1 medium)', calories: 62, protein: 1.2, carbs: 15, fats: 0.3, unit: 'piece' },
+            'papaya': { name: 'Papaya', calories: 43, protein: 0.5, carbs: 11, fats: 0.3, unit: '100g' },
+            'mango': { name: 'Mango', calories: 60, protein: 0.8, carbs: 15, fats: 0.4, unit: '100g' },
+            'grapes': { name: 'Grapes', calories: 67, protein: 0.7, carbs: 17, fats: 0.2, unit: '100g' },
+            'watermelon': { name: 'Watermelon', calories: 30, protein: 0.6, carbs: 7.6, fats: 0.2, unit: '100g' },
+            
+            // Nuts & Seeds
+            'almond': { name: 'Almonds', calories: 579, protein: 21, carbs: 22, fats: 50, unit: '100g' },
+            'peanut': { name: 'Peanuts', calories: 567, protein: 26, carbs: 16, fats: 49, unit: '100g' },
+            'peanut butter': { name: 'Peanut Butter', calories: 595, protein: 25, carbs: 21, fats: 50, unit: '100g' },
+            'walnut': { name: 'Walnuts', calories: 654, protein: 15, carbs: 14, fats: 65, unit: '100g' },
+            'chana': { name: 'Roasted Chana', calories: 364, protein: 19, carbs: 58, fats: 7, unit: '100g' },
+            
+            // Oils & Fats
+            'oil': { name: 'Oil/Ghee', calories: 884, protein: 0, carbs: 0, fats: 100, unit: '10ml' },
+            'ghee': { name: 'Ghee', calories: 884, protein: 0, carbs: 0, fats: 100, unit: '10ml' },
+            'butter': { name: 'Butter', calories: 717, protein: 0.9, carbs: 0.1, fats: 81, unit: '10g' },
+            
+            // Other
+            'tea': { name: 'Tea (unsweetened)', calories: 2, protein: 0.3, carbs: 0.3, fats: 0, unit: '100ml' },
+            'coffee': { name: 'Coffee (unsweetened)', calories: 0, protein: 0.1, carbs: 0, fats: 0, unit: '100ml' },
+            'honey': { name: 'Honey', calories: 304, protein: 0.3, carbs: 82, fats: 0, unit: '100g' },
+            'sugar': { name: 'Sugar', calories: 387, protein: 0, carbs: 100, fats: 0, unit: '100g' },
+            'salt': { name: 'Salt', calories: 0, protein: 0, carbs: 0, fats: 0, unit: '1g' }
         };
 
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const today = days[new Date().getDay()];
-        
-        document.getElementById('dayInfo').textContent = 
-            `📅 ${new Date().toLocaleDateString()} (${today}) | Expected: ${workoutSchedule[today]}`;
 
-        let charts = {};
+        window.onload = function() {
+            loadProfile();
+            updateDayInfo();
+            checkProfileStatus();
+            toggleWorkoutType();
+            updateVisitorCount();
+        };
+
+        function updateDayInfo() {
+            document.getElementById('dayInfo').textContent = 
+                `📅 ${new Date().toLocaleDateString()} (${today})`;
+        }
 
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -371,30 +831,213 @@
             
             event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
-            
-            if (tab === 'analytics') {
-                renderAnalytics();
+        }
+
+        function updateVisitorCount() {
+            let count = localStorage.getItem('visitorCount') || 0;
+            count = parseInt(count) + 1;
+            localStorage.setItem('visitorCount', count);
+            document.getElementById('visitorCount').textContent = count;
+        }
+
+        function loadProfile() {
+            const saved = localStorage.getItem('userProfile');
+            if (saved) {
+                userProfile = JSON.parse(saved);
+                document.getElementById('profileGender').value = userProfile.gender || '';
+                document.getElementById('profileHeight').value = userProfile.height || '';
+                document.getElementById('profileWeight').value = userProfile.weight || '';
+                document.getElementById('profileTargetWeight').value = userProfile.targetWeight || '';
+                document.getElementById('profileAge').value = userProfile.age || '';
+                document.getElementById('profileActivity').value = userProfile.activity || '';
+                document.getElementById('profileGoal').value = userProfile.goal || '';
             }
         }
 
-        function calculateScore(value, goal) {
-            if (goal.min && goal.max) {
-                if (value >= goal.min && value <= goal.max) return { score: 100, status: 'perfect', msg: '✅ Perfect!' };
-                if (value < goal.min) {
-                    const deficit = ((goal.min - value) / goal.min) * 100;
-                    if (deficit <= 10) return { score: 85, status: 'good', msg: '⚠️ Slightly low' };
-                    if (deficit <= 20) return { score: 70, status: 'good', msg: '⚠️ Below target' };
-                    return { score: 50, status: 'poor', msg: '❌ Too low' };
-                }
-                const excess = ((value - goal.max) / goal.max) * 100;
-                if (excess <= 10) return { score: 85, status: 'good', msg: '⚠️ Slightly high' };
-                if (excess <= 20) return { score: 70, status: 'good', msg: '⚠️ Above target' };
-                return { score: 50, status: 'poor', msg: '❌ Too high' };
+        function saveProfile() {
+            userProfile = {
+                gender: document.getElementById('profileGender').value,
+                height: parseFloat(document.getElementById('profileHeight').value) || 0,
+                weight: parseFloat(document.getElementById('profileWeight').value) || 0,
+                targetWeight: parseFloat(document.getElementById('profileTargetWeight').value) || 0,
+                age: parseInt(document.getElementById('profileAge').value) || 0,
+                activity: document.getElementById('profileActivity').value,
+                goal: document.getElementById('profileGoal').value
+            };
+            
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+            calculateNutritionTargets();
+            checkProfileStatus();
+        }
+
+        function calculateNutritionTargets() {
+            if (!userProfile.gender || !userProfile.weight || !userProfile.height || !userProfile.age) {
+                return;
             }
-            const percentage = (value / goal.target) * 100;
-            if (percentage >= 100) return { score: 100, status: 'perfect', msg: '✅ Excellent!' };
-            if (percentage >= 80) return { score: percentage, status: 'good', msg: '⚠️ Almost there' };
-            return { score: percentage, status: 'poor', msg: '❌ Needs work' };
+
+            let bmr;
+            if (userProfile.gender === 'male') {
+                bmr = (10 * userProfile.weight) + (6.25 * userProfile.height) - (5 * userProfile.age) + 5;
+            } else {
+                bmr = (10 * userProfile.weight) + (6.25 * userProfile.height) - (5 * userProfile.age) - 161;
+            }
+
+            const activityMultipliers = {
+                sedentary: 1.2,
+                light: 1.375,
+                moderate: 1.55,
+                active: 1.725,
+                very_active: 1.9
+            };
+            
+            const tdee = bmr * (activityMultipliers[userProfile.activity] || 1.55);
+            
+            let targetCalories = tdee;
+            if (userProfile.goal === 'weight_loss') {
+                targetCalories = tdee - 500;
+            } else if (userProfile.goal === 'muscle_gain') {
+                targetCalories = tdee + 300;
+            }
+
+            let proteinGrams, carbsGrams, fatsGrams;
+            
+            if (userProfile.gender === 'male') {
+                proteinGrams = userProfile.weight * 2.0;
+                fatsGrams = (targetCalories * 0.25) / 9;
+                carbsGrams = (targetCalories - (proteinGrams * 4) - (fatsGrams * 9)) / 4;
+            } else {
+                proteinGrams = userProfile.weight * 1.6;
+                fatsGrams = (targetCalories * 0.30) / 9;
+                carbsGrams = (targetCalories - (proteinGrams * 4) - (fatsGrams * 9)) / 4;
+            }
+
+            userProfile.targets = {
+                calories: Math.round(targetCalories),
+                protein: Math.round(proteinGrams),
+                carbs: Math.round(carbsGrams),
+                fats: Math.round(fatsGrams),
+                water: userProfile.gender === 'male' ? 3.7 : 2.7,
+                sleep: 8
+            };
+
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+            displayNutritionTargets();
+        }
+
+        function displayNutritionTargets() {
+            if (!userProfile.targets) return;
+            
+            const targetsDiv = document.getElementById('nutritionTargets');
+            targetsDiv.classList.remove('hidden');
+            document.getElementById('targetCalories').textContent = `${userProfile.targets.calories} kcal`;
+            document.getElementById('targetProtein').textContent = `${userProfile.targets.protein}g`;
+            document.getElementById('targetCarbs').textContent = `${userProfile.targets.carbs}g`;
+            document.getElementById('targetFats').textContent = `${userProfile.targets.fats}g`;
+        }
+
+        function checkProfileStatus() {
+            const warning = document.getElementById('profileWarning');
+            if (userProfile.gender && userProfile.weight && userProfile.height && userProfile.age) {
+                warning.classList.add('hidden');
+            } else {
+                warning.classList.remove('hidden');
+            }
+        }
+
+        function analyzeFoodNutrition() {
+            const foodInput = document.getElementById('foodInput').value.trim();
+            if (!foodInput) {
+                alert('Please enter what you ate');
+                return;
+            }
+
+            const items = foodInput.split(',').map(item => item.trim().toLowerCase());
+            let totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFats = 0;
+            const foundItems = [];
+
+            items.forEach(item => {
+                if (!item) return;
+                
+                // Try to find quantity (e.g., "2 eggs" or "100g chicken")
+                const quantityMatch = item.match(/^(\d+(?:\.\d+)?)\s*(g|ml|cup|piece|slice)?/);
+                let quantity = 1;
+                let unit = 'piece';
+                let foodName = item;
+
+                if (quantityMatch) {
+                    quantity = parseFloat(quantityMatch[1]);
+                    if (quantityMatch[2]) {
+                        unit = quantityMatch[2];
+                    }
+                    foodName = item.substring(quantityMatch[0].length).trim();
+                }
+
+                // Search for food in database
+                let found = false;
+                for (const [key, food] of Object.entries(foodDatabase)) {
+                    if (foodName.includes(key) || key.includes(foodName)) {
+                        let multiplier = quantity;
+                        
+                        // Convert units
+                        if (food.unit === '100g' || food.unit === '100ml') {
+                            if (unit === 'g') multiplier = quantity / 100;
+                            else if (unit === 'ml') multiplier = quantity / 100;
+                        } else if (food.unit === '10ml') {
+                            if (unit === 'ml') multiplier = quantity / 10;
+                        }
+
+                        totalCalories += food.calories * multiplier;
+                        totalProtein += food.protein * multiplier;
+                        totalCarbs += food.carbs * multiplier;
+                        totalFats += food.fats * multiplier;
+                        
+                        foundItems.push(`${quantity}${unit} ${food.name}`);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    foundItems.push(`❓ ${item} (not found - add manually)`);
+                }
+            });
+
+            document.getElementById('analyzedCalories').textContent = Math.round(totalCalories);
+            document.getElementById('analyzedProtein').textContent = Math.round(totalProtein);
+            document.getElementById('analyzedCarbs').textContent = Math.round(totalCarbs);
+            document.getElementById('analyzedFats').textContent = Math.round(totalFats);
+            document.getElementById('foodItems').textContent = foundItems.join(' | ');
+            
+            document.getElementById('foodAnalysisResult').classList.remove('hidden');
+        }
+
+        function useFoodAnalysis() {
+            document.getElementById('calories').value = document.getElementById('analyzedCalories').textContent;
+            document.getElementById('protein').value = document.getElementById('analyzedProtein').textContent;
+            document.getElementById('carbs').value = document.getElementById('analyzedCarbs').textContent;
+            document.getElementById('fats').value = document.getElementById('analyzedFats').textContent;
+            alert('✅ Values added! Continue filling other fields.');
+        }
+
+        function toggleWorkoutType() {
+            const workout = document.getElementById('workout').value;
+            const workoutTypeGroup = document.getElementById('workoutTypeGroup');
+            const workoutDurationGroup = document.getElementById('workoutDurationGroup');
+            
+            if (workout === 'yes') {
+                workoutTypeGroup.style.display = 'block';
+                workoutDurationGroup.style.display = 'block';
+            } else {
+                workoutTypeGroup.style.display = 'none';
+                workoutDurationGroup.style.display = 'none';
+            }
+        }
+
+        function selectScale(type, value) {
+            document.getElementById(type).value = value;
+            const items = document.getElementById(type + 'Scale').querySelectorAll('.scale-item');
+            items.forEach(item => item.classList.remove('selected'));
+            items[value - 1].classList.add('selected');
         }
 
         document.getElementById('trackerForm').addEventListener('submit', function(e) {
@@ -409,369 +1052,118 @@
                 water: parseFloat(document.getElementById('water').value),
                 sleep: parseFloat(document.getElementById('sleep').value),
                 workout: document.getElementById('workout').value === 'yes',
-                study: parseFloat(document.getElementById('study').value)
+                workoutType: document.getElementById('workoutType').value,
+                workoutDuration: parseFloat(document.getElementById('workoutDuration').value) || 0,
+                study: parseFloat(document.getElementById('study').value),
+                mood: parseInt(document.getElementById('mood').value),
+                stress: parseInt(document.getElementById('stress').value),
+                energy: parseInt(document.getElementById('energy').value),
+                feelings: document.getElementById('feelings').value
             };
 
-            let totalScore = 0;
-            let achievements = [];
-            let improvements = [];
-            let html = '';
+            // Calculate overall score
+            let score = 0;
+            const targets = userProfile.targets || { calories: 1900, protein: 170, carbs: 140, fats: 50, water: 3.5, sleep: 8 };
+            
+            score += Math.min(100, (data.calories / targets.calories) * 100 * 0.8 + 20);
+            score += Math.min(100, (data.protein / targets.protein) * 100 * 0.8 + 20);
+            score += Math.min(100, (data.sleep / targets.sleep) * 100 * 0.8 + 20);
+            score += data.mood * 10;
+            score += (11 - data.stress) * 10;
+            score += data.energy * 10;
+            score += (data.workout ? 100 : 0);
+            score = score / 7;
 
-            const calScore = calculateScore(data.calories, goals.calories);
-            const protScore = calculateScore(data.protein, goals.protein);
-            const carbScore = calculateScore(data.carbs, goals.carbs);
-            const fatScore = calculateScore(data.fats, goals.fats);
-            const waterScore = calculateScore(data.water, goals.water);
-            const sleepScore = calculateScore(data.sleep, goals.sleep);
-            const studyScore = calculateScore(data.study, goals.study);
-            const workoutScore = data.workout ? 100 : 0;
+            data.score = Math.round(score);
 
-            totalScore = (calScore.score + protScore.score + carbScore.score + fatScore.score + 
-                         waterScore.score + sleepScore.score + studyScore.score + workoutScore) / 8;
-
-            data.score = totalScore;
-
-            if (calScore.score === 100) achievements.push('Perfect calorie intake!');
-            if (protScore.score === 100) achievements.push('Excellent protein intake!');
-            if (waterScore.score >= 90) achievements.push('Great hydration!');
-            if (data.workout) achievements.push('Completed workout!');
-            if (studyScore.score >= 100) achievements.push('Excellent study dedication!');
-
-            if (calScore.score < 70) improvements.push('Adjust calorie intake');
-            if (protScore.score < 70) improvements.push('Increase protein (eggs, paneer, chicken)');
-            if (waterScore.score < 90) improvements.push(`Drink ${(goals.water.target - data.water).toFixed(1)}L more water`);
-            if (sleepScore.score < 70) improvements.push('Get more sleep (7-8 hours)');
-            if (!data.workout) improvements.push('Complete your workout');
-            if (studyScore.score < 80) improvements.push(`Study ${(goals.study.target - data.study).toFixed(1)} more hours`);
-
-            let grade, emoji;
-            if (totalScore >= 90) { grade = 'A+'; emoji = '🌟'; }
-            else if (totalScore >= 80) { grade = 'A'; emoji = '🎉'; }
-            else if (totalScore >= 70) { grade = 'B'; emoji = '👍'; }
-            else if (totalScore >= 60) { grade = 'C'; emoji = '😐'; }
-            else { grade = 'D'; emoji = '😟'; }
-
-            html = `
+            let html = `
                 <div class="score-box">
-                    <h2>${totalScore.toFixed(0)}/100</h2>
-                    <p>Grade: ${grade} ${emoji}</p>
+                    <h2>${data.score}/100</h2>
+                    <p>Today's Score</p>
                 </div>
 
-                <div class="section-title">📊 Detailed Metrics</div>
+                <div class="section-title">📊 Today's Nutrition</div>
                 <div class="metric">
-                    <div class="metric-title">🍽️ Calories: ${data.calories}/${goals.calories.target} kcal
-                        <span class="status status-${calScore.status}">${calScore.msg}</span>
-                    </div>
+                    <div class="metric-title">🍽️ Calories: ${data.calories} kcal</div>
+                    <div class="metric-value">Target: ${targets.calories}${data.calories >= targets.calories * 0.95 && data.calories <= targets.calories * 1.05 ? ' ✅' : ' ⚠️'}</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">💪 Protein: ${data.protein}g/${goals.protein.target}g
-                        <span class="status status-${protScore.status}">${protScore.msg}</span>
-                    </div>
+                    <div class="metric-title">💪 Protein: ${data.protein}g</div>
+                    <div class="metric-value">Target: ${targets.protein}g${data.protein >= targets.protein * 0.95 && data.protein <= targets.protein * 1.05 ? ' ✅' : ' ⚠️'}</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">🍚 Carbs: ${data.carbs}g/${goals.carbs.target}g
-                        <span class="status status-${carbScore.status}">${carbScore.msg}</span>
-                    </div>
+                    <div class="metric-title">🍚 Carbs: ${data.carbs}g</div>
+                    <div class="metric-value">Target: ${targets.carbs}g</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">🥑 Fats: ${data.fats}g/${goals.fats.target}g
-                        <span class="status status-${fatScore.status}">${fatScore.msg}</span>
-                    </div>
+                    <div class="metric-title">🥑 Fats: ${data.fats}g</div>
+                    <div class="metric-value">Target: ${targets.fats}g</div>
+                </div>
+
+                <div class="section-title">🧠 Mental Wellness</div>
+                <div class="metric">
+                    <div class="metric-title">😊 Mood: ${data.mood}/10</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">💧 Water: ${data.water}L/${goals.water.target}L
-                        <span class="status status-${waterScore.status}">${waterScore.msg}</span>
-                    </div>
+                    <div class="metric-title">😰 Stress: ${data.stress}/10</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">😴 Sleep: ${data.sleep}hrs/${goals.sleep.target}hrs
-                        <span class="status status-${sleepScore.status}">${sleepScore.msg}</span>
-                    </div>
+                    <div class="metric-title">⚡ Energy: ${data.energy}/10</div>
+                </div>
+
+                <div class="section-title">💪 Fitness</div>
+                <div class="metric">
+                    <div class="metric-title">🏋️ Workout: ${data.workout ? `✅ ${data.workoutType} (${data.workoutDuration} min)` : '❌ Not Done'}</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">🏋️ Workout: ${data.workout ? 'Completed ✅' : 'Not Done ❌'}</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-title">📚 Study: ${data.study}hrs/${goals.study.target}hrs
-                        <span class="status status-${studyScore.status}">${studyScore.msg}</span>
-                    </div>
+                    <div class="metric-title">📚 Study: ${data.study} hours</div>
                 </div>
             `;
 
-            if (achievements.length > 0) {
-                html += '<div class="section-title">🏆 Achievements</div>';
-                achievements.forEach(a => html += `<div class="achievement">✓ ${a}</div>`);
-            }
-
-            if (improvements.length > 0) {
-                html += '<div class="section-title">⚠️ Areas to Improve</div>';
-                improvements.forEach(i => html += `<div class="improvement">• ${i}</div>`);
-            }
-
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = html;
-            resultsDiv.style.display = 'block';
-            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('results').innerHTML = html;
+            document.getElementById('results').style.display = 'block';
 
             const history = JSON.parse(localStorage.getItem('progressHistory') || '[]');
             history.push(data);
             localStorage.setItem('progressHistory', JSON.stringify(history.slice(-30)));
+
+            document.getElementById('trackerForm').reset();
+            document.getElementById('foodAnalysisResult').classList.add('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
         });
 
-        function renderAnalytics() {
-            const history = JSON.parse(localStorage.getItem('progressHistory') || '[]');
-            const analyticsDiv = document.getElementById('analyticsContent');
-            
-            if (history.length === 0) {
-                analyticsDiv.innerHTML = '<div class="no-data">📊 No data yet! Start tracking to see analytics.</div>';
-                return;
-            }
-
-            const last7Days = history.slice(-7);
-            const dates = last7Days.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-
-            // Stats Cards
-            const avgScore = (history.reduce((sum, d) => sum + d.score, 0) / history.length).toFixed(0);
-            const workoutStreak = calculateStreak(history);
-            const totalDays = history.length;
-            const bestScore = Math.max(...history.map(d => d.score)).toFixed(0);
-
-            let html = `
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Average Score</div>
-                        <div class="stat-value">${avgScore}%</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Workout Streak</div>
-                        <div class="stat-value">${workoutStreak} 🔥</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Total Days</div>
-                        <div class="stat-value">${totalDays}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Best Score</div>
-                        <div class="stat-value">${bestScore}%</div>
-                    </div>
-                </div>
-
-                <div class="section-title">📈 Overall Score Trend (Last 7 Days)</div>
-                <div class="chart-container">
-                    <canvas id="scoreChart"></canvas>
-                </div>
-
-                <div class="section-title">🍽️ Nutrition Trends</div>
-                <div class="chart-container">
-                    <canvas id="nutritionChart"></canvas>
-                </div>
-
-                <div class="section-title">💧 Hydration & Sleep</div>
-                <div class="chart-container">
-                    <canvas id="healthChart"></canvas>
-                </div>
-
-                <div class="section-title">📚 Study & Workout Consistency</div>
-                <div class="chart-container">
-                    <canvas id="consistencyChart"></canvas>
-                </div>
-            `;
-
-            analyticsDiv.innerHTML = html;
-
-            // Destroy old charts
-            Object.values(charts).forEach(chart => chart.destroy());
-            charts = {};
-
-            // Score Trend Chart
-            charts.score = new Chart(document.getElementById('scoreChart'), {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Daily Score',
-                        data: last7Days.map(d => d.score),
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-
-            // Nutrition Chart
-            charts.nutrition = new Chart(document.getElementById('nutritionChart'), {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            label: 'Calories',
-                            data: last7Days.map(d => d.calories),
-                            borderColor: '#ff6384',
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Protein (g)',
-                            data: last7Days.map(d => d.protein),
-                            borderColor: '#36a2eb',
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Carbs (g)',
-                            data: last7Days.map(d => d.carbs),
-                            borderColor: '#ffce56',
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-
-            // Health Chart
-            charts.health = new Chart(document.getElementById('healthChart'), {
-                type: 'bar',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            label: 'Water (L)',
-                            data: last7Days.map(d => d.water),
-                            backgroundColor: '#36a2eb'
-                        },
-                        {
-                            label: 'Sleep (hrs)',
-                            data: last7Days.map(d => d.sleep),
-                            backgroundColor: '#9966ff'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-
-            // Consistency Chart
-            charts.consistency = new Chart(document.getElementById('consistencyChart'), {
-                type: 'bar',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            label: 'Study (hrs)',
-                            data: last7Days.map(d => d.study),
-                            backgroundColor: '#4bc0c0'
-                        },
-                        {
-                            label: 'Workout',
-                            data: last7Days.map(d => d.workout ? 1 : 0),
-                            backgroundColor: '#ff9f40'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { 
-                            beginAtZero: true,
-                            max: 5
-                        }
-                    }
-                }
-            });
-        }
-
-        function calculateStreak(history) {
-            let streak = 0;
-            for (let i = history.length - 1; i >= 0; i--) {
-                if (history[i].workout) {
-                    streak++;
-                } else {
-                    break;
-                }
-            }
-            return streak;
-        }
-
-        async function shareApp() {
-            const shareText = `🎯 Check out this Fitness & Study Tracker!\n\nTrack your:\n✅ Nutrition (calories, protein, carbs)\n✅ Water & Sleep\n✅ Workouts\n✅ Study Time\n\nGet instant feedback and beautiful analytics!`;
+        function shareApp() {
+            const shareText = `🎯 AI Fitness & Wellness Tracker - Track Nutrition, Workouts & Mental Health!\n\nFeatures:\n✅ Smart Food Analyzer\n✅ Personalized Nutrition\n✅ Mental Health Tracking\n✅ AI-Powered Insights\n\nTry it now!`;
             
             if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Fitness & Study Tracker',
-                        text: shareText,
-                        url: window.location.href
-                    });
-                } catch (err) {
-                    fallbackShare();
-                }
-            } else {
-                fallbackShare();
-            }
-        }
-
-        function fallbackShare() {
-            const shareText = `🎯 Fitness & Study Tracker App\n\nTo use:\n1. Save this HTML file\n2. Open in any browser\n3. Works offline!\n\nOr visit: ${window.location.href}`;
-            
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    alert('✅ Share link copied! Paste it in WhatsApp/Email to share.');
+                navigator.share({
+                    title: 'AI Fitness Tracker',
+                    text: shareText
                 });
             } else {
-                prompt('Copy this text to share:', shareText);
+                navigator.clipboard.writeText(shareText);
+                alert('✅ Link copied!');
             }
         }
 
         function saveReport() {
-            const resultsDiv = document.getElementById('results');
-            if (!resultsDiv.style.display || resultsDiv.style.display === 'none') {
-                alert('⚠️ Please analyze your progress first!');
+            const results = document.getElementById('results').innerText;
+            if (!results) {
+                alert('⚠️ Please complete tracking first!');
                 return;
             }
-
-            const reportText = resultsDiv.innerText;
-            const date = new Date().toLocaleDateString();
-            const blob = new Blob([`FITNESS & STUDY PROGRESS REPORT\nDate: ${date}\n\n${reportText}`], { type: 'text/plain' });
+            const blob = new Blob([results], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `fitness-report-${date.replace(/\//g, '-')}.txt`;
-            document.body.appendChild(a);
+            a.download = `fitness-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.txt`;
             a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            alert('✅ Report downloaded!');
         }
 
         function clearData() {
-            if (confirm('⚠️ This will delete all your progress data. Are you sure?')) {
+            if (confirm('⚠️ Delete all progress data?')) {
                 localStorage.removeItem('progressHistory');
-                alert('✅ All data cleared!');
+                alert('✅ Data cleared!');
                 location.reload();
             }
         }
