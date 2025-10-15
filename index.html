@@ -1,26 +1,39 @@
-# fitness_agent.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime, timedelta
 import sqlite3
 import math
 
 DB = "fitness_agent.db"
 
-# ---------- Utilities ----------
+# ---------- DATABASE SETUP ----------
 def init_db():
     conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("""CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, dob TEXT, sex TEXT,
-        height_cm REAL, weight_kg REAL, activity_level TEXT
-    )""")
-    c.execute("""CREATE TABLE IF NOT EXISTS activities (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, type TEXT,
-        start_time TEXT, duration_min REAL, distance_km REAL, steps INTEGER,
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        dob TEXT,
+        sex TEXT,
+        height_cm REAL,
+        weight_kg REAL,
+        activity_level TEXT
+    )
+    """)
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        type TEXT,
+        start_time TEXT,
+        duration_min REAL,
+        distance_km REAL,
+        steps INTEGER,
         calories REAL
-    )""")
+    )
+    """)
     conn.commit()
     conn.close()
 
@@ -33,21 +46,19 @@ def query_db(query, params=(), one=False):
     conn.close()
     return rows[0] if one and rows else rows
 
-# ---------- Calculators ----------
+# ---------- CALCULATORS ----------
 def bmi(weight_kg, height_cm):
     h = height_cm / 100.0
     return round(weight_kg / (h*h), 2)
 
 def bmr_mifflin(weight_kg, height_cm, age, sex):
-    # Mifflin-St Jeor
     if sex.lower() in ("m", "male"):
         s = 5
     else:
         s = -161
-    return 10*weight_kg + 6.25*height_cm - 5*age + s
+    return round(10*weight_kg + 6.25*height_cm - 5*age + s, 1)
 
 def calories_burned(activity_type, duration_min, user):
-    # very simplified MET-based estimate
     mets = {
         "walking": 3.5,
         "running": 9.8,
@@ -60,10 +71,10 @@ def calories_burned(activity_type, duration_min, user):
     kcal = (met * 3.5 * weight_kg / 200) * duration_min
     return round(kcal, 1)
 
-# ---------- Pydantic models ----------
+# ---------- MODELS ----------
 class UserCreate(BaseModel):
     name: str
-    dob: str  # ISO date YYYY-MM-DD
+    dob: str  # YYYY-MM-DD
     sex: str
     height_cm: float
     weight_kg: float
@@ -72,25 +83,28 @@ class UserCreate(BaseModel):
 class ActivityCreate(BaseModel):
     user_id: int
     type: str
-    start_time: Optional[str] = None  # ISO datetime optional
+    start_time: Optional[str] = None
     duration_min: float
     distance_km: Optional[float] = 0.0
     steps: Optional[int] = 0
 
-app = FastAPI(title="Fitness Tracker Agent AI - Prototype")
+# ---------- FASTAPI ----------
+app = FastAPI(title="🏋️ Fitness Tracker Agent AI - Prototype")
 
-# ---------- Startup ----------
 @app.on_event("startup")
 def startup():
     init_db()
 
-# ---------- Endpoints ----------
+# ---------- ENDPOINTS ----------
 @app.post("/users")
 def create_user(u: UserCreate):
-    query_db("INSERT INTO users (name,dob,sex,height_cm,weight_kg,activity_level) VALUES (?,?,?,?,?,?)",
-             (u.name, u.dob, u.sex, u.height_cm, u.weight_kg, u.activity_level))
-    rows = query_db("SELECT * FROM users ORDER BY id DESC LIMIT 1", one=True)
-    return {"user": rows}
+    query_db(
+        "INSERT INTO users (name,dob,sex,height_cm,weight_kg,activity_level) VALUES (?,?,?,?,?,?)",
+        (u.name, u.dob, u.sex, u.height_cm, u.weight_kg, u.activity_level)
+    )
+    row = query_db("SELECT * FROM users ORDER BY id DESC LIMIT 1", one=True)
+    cols = ["id","name","dob","sex","height_cm","weight_kg","activity_level"]
+    return {"user": dict(zip(cols, row))}
 
 @app.get("/users/{user_id}")
 def get_user(user_id: int):
@@ -98,7 +112,6 @@ def get_user(user_id: int):
     if not row:
         raise HTTPException(404, "User not found")
     user = dict(zip(["id","name","dob","sex","height_cm","weight_kg","activity_level"], row))
-    # compute derived
     birth = datetime.fromisoformat(user["dob"])
     age = int((datetime.utcnow() - birth).days / 365.25)
     user["age"] = age
@@ -114,31 +127,41 @@ def add_activity(a: ActivityCreate):
     user = dict(zip(["id","name","dob","sex","height_cm","weight_kg","activity_level"], user_row))
     start_time = a.start_time or datetime.utcnow().isoformat()
     cals = calories_burned(a.type, a.duration_min, user)
-    query_db("""INSERT INTO activities (user_id,type,start_time,duration_min,distance_km,steps,calories)
-                VALUES (?,?,?,?,?,?,?)""", (a.user_id, a.type, start_time, a.duration_min, a.distance_km, a.steps, cals))
-    last = query_db("SELECT * FROM activities ORDER BY id DESC LIMIT 1", one=True)
-    return {"activity": last}
+    query_db("""
+    INSERT INTO activities (user_id,type,start_time,duration_min,distance_km,steps,calories)
+    VALUES (?,?,?,?,?,?,?)
+    """, (a.user_id, a.type, start_time, a.duration_min, a.distance_km, a.steps, cals))
+    row = query_db("SELECT * FROM activities ORDER BY id DESC LIMIT 1", one=True)
+    cols = ["id","user_id","type","start_time","duration_min","distance_km","steps","calories"]
+    return {"activity": dict(zip(cols, row))}
 
 @app.get("/activities/user/{user_id}")
 def list_activities(user_id: int, days: Optional[int] = 7):
     since = datetime.utcnow() - timedelta(days=days)
-    rows = query_db("SELECT * FROM activities WHERE user_id=? AND start_time>=? ORDER BY start_time DESC",
-                    (user_id, since.isoformat()))
+    rows = query_db(
+        "SELECT * FROM activities WHERE user_id=? AND start_time>=? ORDER BY start_time DESC",
+        (user_id, since.isoformat())
+    )
     cols = ["id","user_id","type","start_time","duration_min","distance_km","steps","calories"]
     return [dict(zip(cols,r)) for r in rows]
 
-# Simple chat-style assistant
+# ---------- SIMPLE AI ASSISTANT ----------
 @app.post("/assistant/{user_id}")
 def assistant_query(user_id: int, payload: dict):
-    # payload: {"query": "How many calories did I burn today?"}
     q = payload.get("query","").lower()
+
+    # 1. Calories burned today
     if "calorie" in q or "burn" in q:
-        rows = query_db("SELECT SUM(calories) FROM activities WHERE user_id=? AND start_time>=?",
-                        (user_id, datetime.utcnow().replace(hour=0,minute=0,second=0).isoformat()), one=True)
+        rows = query_db(
+            "SELECT SUM(calories) FROM activities WHERE user_id=? AND start_time>=?",
+            (user_id, datetime.utcnow().replace(hour=0,minute=0,second=0).isoformat()),
+            one=True
+        )
         total = rows[0] if rows and rows[0] else 0
         return {"reply": f"You burned approximately {round(total,1)} kcal today from logged activities."}
+
+    # 2. Workout recommendation
     if "recommend" in q or "workout" in q:
-        # very simple recommender (rule-based)
         user_row = query_db("SELECT * FROM users WHERE id=?", (user_id,), one=True)
         if not user_row:
             raise HTTPException(404, "User not found")
@@ -148,7 +171,10 @@ def assistant_query(user_id: int, payload: dict):
             plan = "30 min brisk walk + 20 min bodyweight strength (3x/week)."
         elif bmi_v < 18.5:
             plan = "Focus on caloric surplus + strength 3x/week."
+            # Surplus calories help in gaining healthy weight
         else:
             plan = "Mix of cardio 3x/week and strength 2x/week."
-        return {"reply": f"Recommended: {plan}"}
-    return {"reply": "Sorry - I don't understand. Try: 'How many calories did I burn today?' or 'Recommend a workout'."}
+        return {"reply": f"Recommended workout plan: {plan}"}
+
+    # Default
+    return {"reply": "Sorry, I don't understand. Try: 'How many calories did I burn today?' or 'Recommend a workout'."}
