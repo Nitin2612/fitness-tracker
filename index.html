@@ -1,411 +1,577 @@
-import React, { useState } from 'react';
-import { Calendar, Activity, Heart, Moon, Utensils, Droplets, MessageCircle, TrendingUp, Award, AlertCircle } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babu ne Thana thaya - Health Tracker</title>
+    <meta name="description" content="Track your daily health routine and get personalized feedback">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            border: none;
+        }
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-const HealthRoutineApp = () => {
-  const [activeTab, setActiveTab] = useState('tracker');
-  const [routineData, setRoutineData] = useState({
-    sleepHours: 7,
-    waterIntake: 6,
-    meals: 3,
-    exercise: 30,
-    screenTime: 4,
-    stressLevel: 5
-  });
-  const [chatMessages, setChatMessages] = useState([
-    { type: 'bot', text: "Hi! I'm your health assistant. Ask me anything about your routine, health tips, or wellness advice!" }
-  ]);
-  const [chatInput, setChatInput] = useState('');
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-  const calculateHealthScore = () => {
-    let score = 0;
-    if (routineData.sleepHours >= 7 && routineData.sleepHours <= 9) score += 20;
-    else if (routineData.sleepHours >= 6) score += 15;
-    else score += 5;
-    
-    if (routineData.waterIntake >= 8) score += 20;
-    else if (routineData.waterIntake >= 6) score += 15;
-    else score += 8;
-    
-    if (routineData.meals >= 3) score += 15;
-    else score += 10;
-    
-    if (routineData.exercise >= 30) score += 25;
-    else if (routineData.exercise >= 15) score += 15;
-    else score += 5;
-    
-    if (routineData.screenTime <= 2) score += 15;
-    else if (routineData.screenTime <= 4) score += 10;
-    else score += 3;
-    
-    if (routineData.stressLevel <= 3) score += 5;
-    else if (routineData.stressLevel <= 6) score += 3;
-    else score += 1;
-    
-    return score;
-  };
+        // Icon Components
+        const Heart = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        );
 
-  const getFeedback = () => {
-    const feedback = [];
-    
-    if (routineData.sleepHours < 7) {
-      feedback.push({
-        icon: Moon,
-        color: 'text-red-500',
-        title: 'Sleep Improvement Needed',
-        text: `You're getting ${routineData.sleepHours} hours of sleep. Aim for 7-9 hours for optimal health. Try: consistent bedtime, dark room, no screens 1 hour before bed.`
-      });
-    } else if (routineData.sleepHours > 9) {
-      feedback.push({
-        icon: Moon,
-        color: 'text-yellow-500',
-        title: 'Sleep Duration High',
-        text: 'Sleeping more than 9 hours regularly may indicate underlying issues. Consider quality over quantity.'
-      });
-    } else {
-      feedback.push({
-        icon: Moon,
-        color: 'text-green-500',
-        title: 'Great Sleep!',
-        text: 'Your sleep duration is optimal. Keep maintaining this healthy habit!'
-      });
-    }
-    
-    if (routineData.waterIntake < 8) {
-      feedback.push({
-        icon: Droplets,
-        color: 'text-blue-400',
-        title: 'Hydration Alert',
-        text: `You're drinking ${routineData.waterIntake} glasses. Target 8+ glasses daily. Tips: Start your day with water, keep a bottle handy, set hourly reminders.`
-      });
-    } else {
-      feedback.push({
-        icon: Droplets,
-        color: 'text-green-500',
-        title: 'Well Hydrated!',
-        text: 'Excellent water intake! This supports digestion, skin health, and energy levels.'
-      });
-    }
-    
-    if (routineData.exercise < 30) {
-      feedback.push({
-        icon: Activity,
-        color: 'text-orange-500',
-        title: 'More Movement Needed',
-        text: `${routineData.exercise} minutes is a start! Aim for 30+ minutes daily. Try: brisk walking, stairs, dancing, or quick home workouts.`
-      });
-    } else {
-      feedback.push({
-        icon: Activity,
-        color: 'text-green-500',
-        title: 'Active Lifestyle!',
-        text: 'Great job staying active! Regular exercise boosts mood, energy, and long-term health.'
-      });
-    }
-    
-    if (routineData.screenTime > 4) {
-      feedback.push({
-        icon: AlertCircle,
-        color: 'text-purple-500',
-        title: 'Screen Time Warning',
-        text: `${routineData.screenTime} hours is high. Reduce to under 4 hours. Try: 20-20-20 rule (every 20 min, look 20 feet away for 20 sec), reading, outdoor activities.`
-      });
-    }
-    
-    if (routineData.stressLevel > 6) {
-      feedback.push({
-        icon: Heart,
-        color: 'text-red-400',
-        title: 'Stress Management',
-        text: 'High stress detected. Practice: deep breathing (4-7-8 technique), 10-min meditation, journaling, or talking to someone you trust.'
-      });
-    }
-    
-    return feedback;
-  };
+        const Activity = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+        );
 
-  const getAIResponse = (message) => {
-    const msg = message.toLowerCase();
-    
-    if (msg.includes('sleep') || msg.includes('tired') || msg.includes('insomnia')) {
-      return "For better sleep: maintain consistent sleep-wake times, keep your room cool (60-67°F), avoid caffeine after 2pm, try progressive muscle relaxation, and consider a warm bath 90 minutes before bed. If issues persist, consult a doctor.";
-    }
-    if (msg.includes('water') || msg.includes('hydrat')) {
-      return "Hydration tips: Drink a glass upon waking, infuse water with fruits for flavor, eat water-rich foods (cucumber, watermelon), and use apps to track intake. Signs of good hydration: pale yellow urine, moist lips, good energy.";
-    }
-    if (msg.includes('exercise') || msg.includes('workout') || msg.includes('fitness')) {
-      return "Exercise ideas: Start with 10-min walks and increase gradually, try bodyweight exercises (squats, push-ups, planks), find activities you enjoy (dancing, cycling, swimming), and schedule workouts like important meetings. Consistency beats intensity!";
-    }
-    if (msg.includes('diet') || msg.includes('food') || msg.includes('eat')) {
-      return "Healthy eating tips: Fill half your plate with vegetables, choose whole grains, include lean protein, eat mindfully without screens, prep meals ahead, and allow occasional treats. Focus on adding nutritious foods rather than restricting.";
-    }
-    if (msg.includes('stress') || msg.includes('anxious') || msg.includes('overwhelm')) {
-      return "Stress management: Practice 4-7-8 breathing (inhale 4 sec, hold 7, exhale 8), try 10-min meditation apps, exercise regularly, limit news/social media, maintain social connections, and prioritize tasks. Remember: it's okay to ask for help.";
-    }
-    if (msg.includes('weight') || msg.includes('lose') || msg.includes('gain')) {
-      return "Healthy weight management: Focus on sustainable habits not quick fixes, aim for 1-2 lbs per week loss if needed, balance calories with activity, eat protein with each meal, get adequate sleep, and track progress beyond the scale (energy, strength, how clothes fit).";
-    }
-    if (msg.includes('energy') || msg.includes('fatigue')) {
-      return "Boost energy naturally: Get 7-9 hours sleep, stay hydrated, eat balanced meals with protein, take short walks, manage stress, limit sugar/processed foods, and get morning sunlight. If fatigue persists, check with your doctor.";
-    }
-    if (msg.includes('motivation') || msg.includes('habit')) {
-      return "Build lasting habits: Start tiny (2-min version), anchor to existing habits, track progress visually, celebrate small wins, prepare your environment, have an accountability partner, and be kind to yourself when you slip up. Progress isn't linear!";
-    }
-    
-    return "I can help with sleep, nutrition, exercise, stress management, hydration, and building healthy habits! Try asking specific questions like 'How can I sleep better?' or 'What are quick exercises I can do at home?'";
-  };
+        const Moon = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        );
 
-  const handleChatSubmit = (e) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    
-    setChatMessages([...chatMessages, 
-      { type: 'user', text: chatInput },
-      { type: 'bot', text: getAIResponse(chatInput) }
-    ]);
-    setChatInput('');
-  };
+        const Droplets = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path>
+                <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path>
+            </svg>
+        );
 
-  const healthScore = calculateHealthScore();
-  const feedback = getFeedback();
+        const Utensils = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
+                <path d="M7 2v20"></path>
+                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path>
+            </svg>
+        );
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-6xl mx-auto p-4">
-        <header className="text-center py-8">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Heart className="text-red-500 w-10 h-10" />
-            <h1 className="text-4xl font-bold text-gray-800">Babu ne Thana thaya</h1>
-          </div>
-          <p className="text-gray-600">Your Personal Health & Wellness Assistant</p>
-        </header>
+        const MessageCircle = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+        );
 
-        <div className="flex gap-4 justify-center mb-6">
-          <button
-            onClick={() => setActiveTab('tracker')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'tracker'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Activity className="inline w-5 h-5 mr-2" />
-            Track Routine
-          </button>
-          <button
-            onClick={() => setActiveTab('chat')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'chat'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <MessageCircle className="inline w-5 h-5 mr-2" />
-            Chat Assistant
-          </button>
-        </div>
+        const TrendingUp = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+        );
 
-        {activeTab === 'tracker' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <Calendar className="text-indigo-600" />
-                Daily Routine Input
-              </h2>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                    <Moon className="w-5 h-5 text-indigo-500" />
-                    Sleep Hours: {routineData.sleepHours}h
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="12"
-                    value={routineData.sleepHours}
-                    onChange={(e) => setRoutineData({...routineData, sleepHours: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
+        const Award = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="7"></circle>
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+        );
 
-                <div>
-                  <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                    <Droplets className="w-5 h-5 text-blue-500" />
-                    Water Intake: {routineData.waterIntake} glasses
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="15"
-                    value={routineData.waterIntake}
-                    onChange={(e) => setRoutineData({...routineData, waterIntake: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
+        const AlertCircle = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        );
 
-                <div>
-                  <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                    <Utensils className="w-5 h-5 text-green-500" />
-                    Meals: {routineData.meals}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="6"
-                    value={routineData.meals}
-                    onChange={(e) => setRoutineData({...routineData, meals: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
+        const Calendar = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        );
 
-                <div>
-                  <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                    <Activity className="w-5 h-5 text-orange-500" />
-                    Exercise: {routineData.exercise} minutes
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="120"
-                    step="5"
-                    value={routineData.exercise}
-                    onChange={(e) => setRoutineData({...routineData, exercise: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
+        const Send = ({ className, ...props }) => (
+            <svg className={className} {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        );
 
-                <div>
-                  <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                    <TrendingUp className="w-5 h-5 text-purple-500" />
-                    Screen Time: {routineData.screenTime} hours
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="16"
-                    value={routineData.screenTime}
-                    onChange={(e) => setRoutineData({...routineData, screenTime: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
+        // Main App Component
+        const HealthRoutineApp = () => {
+            const [activeTab, setActiveTab] = useState('tracker');
+            const [routineData, setRoutineData] = useState({
+                sleepHours: 7,
+                waterIntake: 6,
+                meals: 3,
+                exercise: 30,
+                screenTime: 4,
+                stressLevel: 5
+            });
+            const [chatMessages, setChatMessages] = useState([
+                { type: 'bot', text: "Hi! I'm your health assistant. Ask me anything about your routine, health tips, or wellness advice!" }
+            ]);
+            const [chatInput, setChatInput] = useState('');
+            const chatEndRef = useRef(null);
 
-                <div>
-                  <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                    <Heart className="w-5 h-5 text-red-500" />
-                    Stress Level: {routineData.stressLevel}/10
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={routineData.stressLevel}
-                    onChange={(e) => setRoutineData({...routineData, stressLevel: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-              </div>
+            // Auto-scroll chat to bottom
+            useEffect(() => {
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [chatMessages]);
 
-              <div className="mt-8 p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm opacity-90">Your Health Score</p>
-                    <p className="text-4xl font-bold">{healthScore}/100</p>
-                  </div>
-                  <Award className="w-16 h-16 opacity-80" />
-                </div>
-                <div className="mt-4 bg-white bg-opacity-20 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-white h-full rounded-full transition-all duration-500"
-                    style={{width: `${healthScore}%`}}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <TrendingUp className="text-green-600" />
-                Personalized Feedback
-              </h2>
-              
-              <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                {feedback.map((item, index) => (
-                  <div key={index} className="p-4 bg-gray-50 rounded-xl border-l-4 border-indigo-500">
-                    <div className="flex items-start gap-3">
-                      <item.icon className={`w-6 h-6 ${item.color} flex-shrink-0 mt-1`} />
-                      <div>
-                        <h3 className="font-bold text-gray-800 mb-1">{item.title}</h3>
-                        <p className="text-gray-600 text-sm leading-relaxed">{item.text}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            const calculateHealthScore = () => {
+                let score = 0;
+                if (routineData.sleepHours >= 7 && routineData.sleepHours <= 9) score += 20;
+                else if (routineData.sleepHours >= 6) score += 15;
+                else score += 5;
                 
-                <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
-                  <h3 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-green-600" />
-                    Quick Win Actions
-                  </h3>
-                  <ul className="text-sm text-gray-700 space-y-1 ml-7">
-                    <li>• Set a consistent bedtime alarm</li>
-                    <li>• Place a water bottle on your desk</li>
-                    <li>• Schedule a 15-minute walk today</li>
-                    <li>• Enable blue light filter after 8 PM</li>
-                    <li>• Try 5 minutes of deep breathing</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                if (routineData.waterIntake >= 8) score += 20;
+                else if (routineData.waterIntake >= 6) score += 15;
+                else score += 8;
+                
+                if (routineData.meals >= 3) score += 15;
+                else score += 10;
+                
+                if (routineData.exercise >= 30) score += 25;
+                else if (routineData.exercise >= 15) score += 15;
+                else score += 5;
+                
+                if (routineData.screenTime <= 2) score += 15;
+                else if (routineData.screenTime <= 4) score += 10;
+                else score += 3;
+                
+                if (routineData.stressLevel <= 3) score += 5;
+                else if (routineData.stressLevel <= 6) score += 3;
+                else score += 1;
+                
+                return score;
+            };
 
-        {activeTab === 'chat' && (
-          <div className="bg-white rounded-2xl shadow-xl max-w-4xl mx-auto">
-            <div className="p-6 border-b bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-2xl">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <MessageCircle className="w-7 h-7" />
-                Health Assistant Chat
-              </h2>
-              <p className="text-indigo-100 text-sm mt-1">Ask me anything about health, wellness, and building better habits!</p>
-            </div>
-            
-            <div className="h-[500px] overflow-y-auto p-6 space-y-4 bg-gray-50">
-              {chatMessages.map((msg, index) => (
-                <div key={index} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-4 rounded-2xl ${
-                    msg.type === 'user'
-                      ? 'bg-indigo-600 text-white rounded-br-none'
-                      : 'bg-white text-gray-800 shadow-md rounded-bl-none border border-gray-200'
-                  }`}>
-                    <p className="text-sm leading-relaxed">{msg.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="p-4 border-t bg-white rounded-b-2xl">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit(e)}
-                  placeholder="Ask about sleep, exercise, nutrition, stress..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <button
-                  onClick={handleChatSubmit}
-                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
-                >
-                  Send
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+            const getFeedback = () => {
+                const feedback = [];
+                
+                if (routineData.sleepHours < 7) {
+                    feedback.push({
+                        icon: Moon,
+                        color: 'text-red-500',
+                        title: 'Sleep Improvement Needed',
+                        text: `You're getting ${routineData.sleepHours} hours of sleep. Aim for 7-9 hours for optimal health. Try: consistent bedtime, dark room, no screens 1 hour before bed.`
+                    });
+                } else if (routineData.sleepHours > 9) {
+                    feedback.push({
+                        icon: Moon,
+                        color: 'text-yellow-500',
+                        title: 'Sleep Duration High',
+                        text: 'Sleeping more than 9 hours regularly may indicate underlying issues. Consider quality over quantity.'
+                    });
+                } else {
+                    feedback.push({
+                        icon: Moon,
+                        color: 'text-green-500',
+                        title: 'Great Sleep!',
+                        text: 'Your sleep duration is optimal. Keep maintaining this healthy habit!'
+                    });
+                }
+                
+                if (routineData.waterIntake < 8) {
+                    feedback.push({
+                        icon: Droplets,
+                        color: 'text-blue-400',
+                        title: 'Hydration Alert',
+                        text: `You're drinking ${routineData.waterIntake} glasses. Target 8+ glasses daily. Tips: Start your day with water, keep a bottle handy, set hourly reminders.`
+                    });
+                } else {
+                    feedback.push({
+                        icon: Droplets,
+                        color: 'text-green-500',
+                        title: 'Well Hydrated!',
+                        text: 'Excellent water intake! This supports digestion, skin health, and energy levels.'
+                    });
+                }
+                
+                if (routineData.exercise < 30) {
+                    feedback.push({
+                        icon: Activity,
+                        color: 'text-orange-500',
+                        title: 'More Movement Needed',
+                        text: `${routineData.exercise} minutes is a start! Aim for 30+ minutes daily. Try: brisk walking, stairs, dancing, or quick home workouts.`
+                    });
+                } else {
+                    feedback.push({
+                        icon: Activity,
+                        color: 'text-green-500',
+                        title: 'Active Lifestyle!',
+                        text: 'Great job staying active! Regular exercise boosts mood, energy, and long-term health.'
+                    });
+                }
+                
+                if (routineData.screenTime > 4) {
+                    feedback.push({
+                        icon: AlertCircle,
+                        color: 'text-purple-500',
+                        title: 'Screen Time Warning',
+                        text: `${routineData.screenTime} hours is high. Reduce to under 4 hours. Try: 20-20-20 rule (every 20 min, look 20 feet away for 20 sec), reading, outdoor activities.`
+                    });
+                }
+                
+                if (routineData.stressLevel > 6) {
+                    feedback.push({
+                        icon: Heart,
+                        color: 'text-red-400',
+                        title: 'Stress Management',
+                        text: 'High stress detected. Practice: deep breathing (4-7-8 technique), 10-min meditation, journaling, or talking to someone you trust.'
+                    });
+                }
+                
+                return feedback;
+            };
 
-export default HealthRoutineApp;
+            const getAIResponse = (message) => {
+                const msg = message.toLowerCase();
+                
+                if (msg.includes('sleep') || msg.includes('tired') || msg.includes('insomnia')) {
+                    return "For better sleep: maintain consistent sleep-wake times, keep your room cool (60-67°F), avoid caffeine after 2pm, try progressive muscle relaxation, and consider a warm bath 90 minutes before bed. If issues persist, consult a doctor.";
+                }
+                if (msg.includes('water') || msg.includes('hydrat')) {
+                    return "Hydration tips: Drink a glass upon waking, infuse water with fruits for flavor, eat water-rich foods (cucumber, watermelon), and use apps to track intake. Signs of good hydration: pale yellow urine, moist lips, good energy.";
+                }
+                if (msg.includes('exercise') || msg.includes('workout') || msg.includes('fitness')) {
+                    return "Exercise ideas: Start with 10-min walks and increase gradually, try bodyweight exercises (squats, push-ups, planks), find activities you enjoy (dancing, cycling, swimming), and schedule workouts like important meetings. Consistency beats intensity!";
+                }
+                if (msg.includes('diet') || msg.includes('food') || msg.includes('eat')) {
+                    return "Healthy eating tips: Fill half your plate with vegetables, choose whole grains, include lean protein, eat mindfully without screens, prep meals ahead, and allow occasional treats. Focus on adding nutritious foods rather than restricting.";
+                }
+                if (msg.includes('stress') || msg.includes('anxious') || msg.includes('overwhelm')) {
+                    return "Stress management: Practice 4-7-8 breathing (inhale 4 sec, hold 7, exhale 8), try 10-min meditation apps, exercise regularly, limit news/social media, maintain social connections, and prioritize tasks. Remember: it's okay to ask for help.";
+                }
+                if (msg.includes('weight') || msg.includes('lose') || msg.includes('gain')) {
+                    return "Healthy weight management: Focus on sustainable habits not quick fixes, aim for 1-2 lbs per week loss if needed, balance calories with activity, eat protein with each meal, get adequate sleep, and track progress beyond the scale (energy, strength, how clothes fit).";
+                }
+                if (msg.includes('energy') || msg.includes('fatigue')) {
+                    return "Boost energy naturally: Get 7-9 hours sleep, stay hydrated, eat balanced meals with protein, take short walks, manage stress, limit sugar/processed foods, and get morning sunlight. If fatigue persists, check with your doctor.";
+                }
+                if (msg.includes('motivation') || msg.includes('habit')) {
+                    return "Build lasting habits: Start tiny (2-min version), anchor to existing habits, track progress visually, celebrate small wins, prepare your environment, have an accountability partner, and be kind to yourself when you slip up. Progress isn't linear!";
+                }
+                if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) {
+                    return "Hello! I'm here to help you with your health journey. Feel free to ask about sleep, nutrition, exercise, stress management, or any wellness topic!";
+                }
+                
+                return "I can help with sleep, nutrition, exercise, stress management, hydration, and building healthy habits! Try asking specific questions like 'How can I sleep better?' or 'What are quick exercises I can do at home?'";
+            };
+
+            const handleChatSubmit = () => {
+                if (!chatInput.trim()) return;
+                
+                setChatMessages([...chatMessages, 
+                    { type: 'user', text: chatInput },
+                    { type: 'bot', text: getAIResponse(chatInput) }
+                ]);
+                setChatInput('');
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleChatSubmit();
+                }
+            };
+
+            const healthScore = calculateHealthScore();
+            const feedback = getFeedback();
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+                    <div className="max-w-6xl mx-auto p-4">
+                        <header className="text-center py-8">
+                            <div className="flex items-center justify-center gap-3 mb-2">
+                                <Heart className="text-red-500 w-10 h-10" />
+                                <h1 className="text-4xl font-bold text-gray-800">Babu ne Thana thaya</h1>
+                            </div>
+                            <p className="text-gray-600">Your Personal Health & Wellness Assistant</p>
+                        </header>
+
+                        <div className="flex gap-4 justify-center mb-6 flex-wrap">
+                            <button
+                                onClick={() => setActiveTab('tracker')}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                    activeTab === 'tracker'
+                                        ? 'bg-indigo-600 text-white shadow-lg'
+                                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Activity className="inline w-5 h-5 mr-2" />
+                                Track Routine
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('chat')}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                    activeTab === 'chat'
+                                        ? 'bg-indigo-600 text-white shadow-lg'
+                                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                                }`}
+                            >
+                                <MessageCircle className="inline w-5 h-5 mr-2" />
+                                Chat Assistant
+                            </button>
+                        </div>
+
+                        {activeTab === 'tracker' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="bg-white rounded-2xl shadow-xl p-6">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                        <Calendar className="text-indigo-600" />
+                                        Daily Routine Input
+                                    </h2>
+                                    
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                                                <Moon className="w-5 h-5 text-indigo-500" />
+                                                Sleep Hours: {routineData.sleepHours}h
+                                            </label>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="12"
+                                                value={routineData.sleepHours}
+                                                onChange={(e) => setRoutineData({...routineData, sleepHours: parseInt(e.target.value)})}
+                                                className="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                                                <Droplets className="w-5 h-5 text-blue-500" />
+                                                Water Intake: {routineData.waterIntake} glasses
+                                            </label>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="15"
+                                                value={routineData.waterIntake}
+                                                onChange={(e) => setRoutineData({...routineData, waterIntake: parseInt(e.target.value)})}
+                                                className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                                                <Utensils className="w-5 h-5 text-green-500" />
+                                                Meals: {routineData.meals}
+                                            </label>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="6"
+                                                value={routineData.meals}
+                                                onChange={(e) => setRoutineData({...routineData, meals: parseInt(e.target.value)})}
+                                                className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                                                <Activity className="w-5 h-5 text-orange-500" />
+                                                Exercise: {routineData.exercise} minutes
+                                            </label>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="120"
+                                                step="5"
+                                                value={routineData.exercise}
+                                                onChange={(e) => setRoutineData({...routineData, exercise: parseInt(e.target.value)})}
+                                                className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                                                <TrendingUp className="w-5 h-5 text-purple-500" />
+                                                Screen Time: {routineData.screenTime} hours
+                                            </label>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="16"
+                                                value={routineData.screenTime}
+                                                onChange={(e) => setRoutineData({...routineData, screenTime: parseInt(e.target.value)})}
+                                                className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                                                <Heart className="w-5 h-5 text-red-500" />
+                                                Stress Level: {routineData.stressLevel}/10
+                                            </label>
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="10"
+                                                value={routineData.stressLevel}
+                                                onChange={(e) => setRoutineData({...routineData, stressLevel: parseInt(e.target.value)})}
+                                                className="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl text-white">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm opacity-90">Your Health Score</p>
+                                                <p className="text-4xl font-bold">{healthScore}/100</p>
+                                            </div>
+                                            <Award className="w-16 h-16 opacity-80" />
+                                        </div>
+                                        <div className="mt-4 bg-white bg-opacity-20 rounded-full h-3 overflow-hidden">
+                                            <div 
+                                                className="bg-white h-full rounded-full transition-all duration-500"
+                                                style={{width: `${healthScore}%`}}
+                                            />
+                                        </div>
+                                        <p className="text-sm mt-3 opacity-90">
+                                            {healthScore >= 80 ? '🎉 Excellent! Keep it up!' : 
+                                             healthScore >= 60 ? '👍 Good job! Small improvements can help.' : 
+                                             '💪 Let\'s work on building healthier habits!'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-2xl shadow-xl p-6">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                        <TrendingUp className="text-green-600" />
+                                        Personalized Feedback
+                                    </h2>
+                                    
+                                    <div className="space-y-4 max-h-[600px] overflow-y-auto chat-scroll pr-2">
+                                        {feedback.map((item, index) => (
+                                            <div key={index} className="p-4 bg-gray-50 rounded-xl border-l-4 border-indigo-500">
+                                                <div className="flex items-start gap-3">
+                                                    <item.icon className={`w-6 h-6 ${item.color} flex-shrink-0 mt-1`} />
+                                                    <div>
+                                                        <h3 className="font-bold text-gray-800 mb-1">{item.title}</h3>
+                                                        <p className="text-gray-600 text-sm leading-relaxed">{item.text}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        
+                                        <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+                                            <h3 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                                                <Award className="w-5 h-5 text-green-600" />
+                                                Quick Win Actions
+                                            </h3>
+                                            <ul className="text-sm text-gray-700 space-y-1 ml-7">
+                                                <li>• Set a consistent bedtime alarm</li>
+                                                <li>• Place a water bottle on your desk</li>
+                                                <li>• Schedule a 15-minute walk today</li>
+                                                <li>• Enable blue light filter after 8 PM</li>
+                                                <li>• Try 5 minutes of deep breathing</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'chat' && (
+                            <div className="bg-white rounded-2xl shadow-xl max-w-4xl mx-auto">
+                                <div className="p-6 border-b bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-2xl">
+                                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                        <MessageCircle className="w-7 h-7" />
+                                        Health Assistant Chat
+                                    </h2>
+                                    <p className="text-indigo-100 text-sm mt-1">Ask me anything about health, wellness, and building better habits!</p>
+                                </div>
+                                
+                                <div className="h-[500px] overflow-y-auto p-6 space-y-4 bg-gray-50 chat-scroll">
+                                    {chatMessages.map((msg, index) => (
+                                        <div key={index} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[80%] p-4 rounded-2xl ${
+                                                msg.type === 'user'
+                                                    ? 'bg-indigo-600 text-white rounded-br-none'
+                                                    : 'bg-white text-gray-800 shadow-md rounded-bl-none border border-gray-200'
+                                            }`}>
+                                                <p className="text-sm leading-relaxed">{msg.text}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div ref={chatEndRef} />
+                                </div>
+                                
+                                <div className="p-4 border-t bg-white rounded-b-2xl">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={chatInput}
+                                            onChange={(e) => setChatInput(e.target.value)}
+                                            onKeyPress={handleKeyPress}
+                                            placeholder="Ask about sleep, exercise, nutrition, stress..."
+                                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                        <button
+                                            onClick={handleChatSubmit}
+                                            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                                        >
+                                            <Send className="w-5 h-5" />
+                                            Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <footer className="text-center py-6 text-gray-600 text-sm mt-8">
+                        <p>© 2024 Babu ne Thana thaya | Built with ❤️ for your health</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<HealthRoutineApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
