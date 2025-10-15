@@ -15,9 +15,8 @@ const HealthRoutineApp = () => {
     { type: 'bot', text: "🪄 Greetings, young wizard! I am the Sorting Hat of Health, here to guide you on your wellness journey. What magical health wisdom do you seek today?" }
   ]);
   const [chatInput, setChatInput] = useState('');
-  const [visitorCount, setVisitorCount] = useState(() => {
-    const stored = parseInt(Math.random() * 500 + 100);
-    return stored;
+  const [visitorCount] = useState(() => {
+    return Math.floor(Math.random() * 500 + 100);
   });
 
   const calculateHealthScore = () => {
