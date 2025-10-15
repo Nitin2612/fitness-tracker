@@ -1,496 +1,154 @@
-<div class="container">
-        <h1>💪 Babu Ne Thana Thaya</h1>
-        <div class="visitor">👥 Visitors: <span id="count">0</span></div>        function showTab(event, t) {
-            event.preventDefault();
-            document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            document.getElementById(t).classList.add('active');
-            event.target.classList.add('active');
-            
-            if (t === 'daily') checkProfile();
-        }<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babu Ne Thana Thaya</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 10px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h1 { text-align: center; color: #667eea; margin-bottom: 5px; font-size: 28px; }
-        .visitor { text-align: center; color: #667eea; font-size: 12px; margin-bottom: 20px; font-weight: bold; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; background: none; border: none; font-weight: bold; color: #666; border-bottom: 3px solid transparent; }
-        .tab.active { color: #667eea; border-bottom-color: #667eea; }
-        .content { display: none; }
-        .content.active { display: block; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; font-family: Arial, sans-serif; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
-        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .result { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; display: none; }
-        .score-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-        .score-box h2 { font-size: 48px; }
-        .metric { background: white; padding: 12px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #667eea; }
-        .title { font-size: 16px; font-weight: bold; color: #667eea; margin: 15px 0 10px 0; }
-        .food-analyzer { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px dashed #ff9800; }
-        .food-result { background: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 10px; display: none; }
-        .food-result.show { display: block; }
-        .nutrition-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
-        .nutrition-box { background: #f0f0f0; padding: 10px; border-radius: 6px; text-align: center; }
-        .nutrition-box strong { display: block; font-size: 20px; color: #667eea; margin-top: 5px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>💪 Babu Ne Thana Thaya</h1>
-        <div class="visitor">👥 Visitors: <span id="count">0</span></div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="showTab(event, 'profile')">👤 Profile</button>
-            <button class="tab" onclick="showTab(event, 'daily')">📝 Daily</button>
-            <button class="tab" onclick="showTab(event, 'analytics')">📊 Analytics</button>
-        </div>
+# fitness_agent.py
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime, timedelta
+import sqlite3
+import math
 
-        <!-- PROFILE TAB -->
-        <div id="profile" class="content active">
-            <h2 style="color: #667eea; margin-bottom: 15px;">Create Your Profile</h2>
-            <form id="profileForm">
-                <div class="input-group">
-                    <label>Gender</label>
-                    <select id="gender" required>
-                        <option value="">Select</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Height (cm)</label>
-                    <input type="number" id="height" placeholder="e.g., 183" required>
-                </div>
-                <div class="input-group">
-                    <label>Weight (kg)</label>
-                    <input type="number" id="weight" placeholder="e.g., 87" required>
-                </div>
-                <div class="input-group">
-                    <label>Target Weight (kg)</label>
-                    <input type="number" id="targetWeight" placeholder="e.g., 75" required>
-                </div>
-                <div class="input-group">
-                    <label>Age (years)</label>
-                    <input type="number" id="age" placeholder="e.g., 25" required>
-                </div>
-                <div class="input-group">
-                    <label>Activity Level</label>
-                    <select id="activity" required>
-                        <option value="">Select</option>
-                        <option value="light">Light (1-3 days/week)</option>
-                        <option value="moderate">Moderate (3-5 days/week)</option>
-                        <option value="active">Active (6-7 days/week)</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Goal</label>
-                    <select id="goal" required>
-                        <option value="">Select</option>
-                        <option value="loss">Weight Loss</option>
-                        <option value="gain">Muscle Gain</option>
-                        <option value="maintain">Maintenance</option>
-                    </select>
-                </div>
-                <div id="targets" style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #667eea; display: none;">
-                    <h4 style="color: #667eea; margin-bottom: 10px;">Your Nutrition Targets</h4>
-                    <div style="font-size: 14px;">
-                        <div style="margin: 5px 0;">Calories: <strong id="cal">-</strong></div>
-                        <div style="margin: 5px 0;">Protein: <strong id="prot">-</strong></div>
-                        <div style="margin: 5px 0;">Carbs: <strong id="carb">-</strong></div>
-                        <div style="margin: 5px 0;">Fats: <strong id="fat">-</strong></div>
-                    </div>
-                </div>
-                <button type="submit">✅ Save & Next →</button>
-            </form>
-        </div>
+DB = "fitness_agent.db"
 
-        <!-- DAILY TAB -->
-        <div id="daily" class="content">
-            <h2 style="color: #667eea; margin-bottom: 15px;">Daily Tracking</h2>
-            <div id="warning" style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;">
-                <p style="color: #856404; font-weight: bold;">⚠️ Complete profile first!</p>
-                <button onclick="showProfile()" style="margin-top: 10px; width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">← Go Back</button>
-            </div>
+# ---------- Utilities ----------
+def init_db():
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("""CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, dob TEXT, sex TEXT,
+        height_cm REAL, weight_kg REAL, activity_level TEXT
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, type TEXT,
+        start_time TEXT, duration_min REAL, distance_km REAL, steps INTEGER,
+        calories REAL
+    )""")
+    conn.commit()
+    conn.close()
 
-            <form id="trackerForm">
-                <div class="food-analyzer">
-                    <h3 style="color: #ff9800; margin-bottom: 10px;">🍽️ What did you eat?</h3>
-                    <textarea id="foodList" placeholder="e.g., 2 eggs, 1 cup oats, banana, 1 roti, dal" style="margin-bottom: 10px;"></textarea>
-                    <button type="button" onclick="analyzeFood()" style="background: #28a745; margin-top: 10px;">🔍 Analyze Food</button>
-                    <div id="foodRes" class="food-result">
-                        <h4>Nutrition Found:</h4>
-                        <div class="nutrition-grid">
-                            <div class="nutrition-box">
-                                <span>Calories</span>
-                                <strong id="fcal">0</strong>
-                            </div>
-                            <div class="nutrition-box">
-                                <span>Protein</span>
-                                <strong id="fprot">0</strong>
-                            </div>
-                            <div class="nutrition-box">
-                                <span>Carbs</span>
-                                <strong id="fcarb">0</strong>
-                            </div>
-                            <div class="nutrition-box">
-                                <span>Fats</span>
-                                <strong id="ffat">0</strong>
-                            </div>
-                        </div>
-                        <button type="button" onclick="useFoodData()" style="background: #17a2b8;">✅ Use These</button>
-                    </div>
-                </div>
+def query_db(query, params=(), one=False):
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute(query, params)
+    rows = c.fetchall()
+    conn.commit()
+    conn.close()
+    return rows[0] if one and rows else rows
 
-                <div class="input-group">
-                    <label>Water (liters)</label>
-                    <input type="number" step="0.1" id="water_input" placeholder="3.5" required>
-                </div>
-                <div class="input-group">
-                    <label>Sleep (hours)</label>
-                    <input type="number" step="0.5" id="sleep_input" placeholder="7.5" required>
-                </div>
-                <div class="input-group">
-                    <label>Workout (Yes/No)</label>
-                    <select id="workout_input" required>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Workout Duration (min)</label>
-                    <input type="number" id="duration_input" placeholder="45">
-                </div>
-                <div class="input-group">
-                    <label>Study Time (hours)</label>
-                    <input type="number" step="0.5" id="study_input" placeholder="3" required>
-                </div>
+# ---------- Calculators ----------
+def bmi(weight_kg, height_cm):
+    h = height_cm / 100.0
+    return round(weight_kg / (h*h), 2)
 
-                <div class="title">Mood & Energy</div>
-                <div class="input-group">
-                    <label>Mood (1-10)</label>
-                    <input type="range" id="mood_input" min="1" max="10" value="5" style="padding: 0; height: 8px;">
-                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="moodVal">5</div>
-                </div>
-                <div class="input-group">
-                    <label>Stress (1-10)</label>
-                    <input type="range" id="stress_input" min="1" max="10" value="5" style="padding: 0; height: 8px;">
-                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="stressVal">5</div>
-                </div>
-                <div class="input-group">
-                    <label>Energy (1-10)</label>
-                    <input type="range" id="energy_input" min="1" max="10" value="5" style="padding: 0; height: 8px;">
-                    <div style="text-align: center; color: #667eea; font-weight: bold; margin-top: 5px;" id="energyVal">5</div>
-                </div>
+def bmr_mifflin(weight_kg, height_cm, age, sex):
+    # Mifflin-St Jeor
+    if sex.lower() in ("m", "male"):
+        s = 5
+    else:
+        s = -161
+    return 10*weight_kg + 6.25*height_cm - 5*age + s
 
-                <button type="submit">🚀 Analyze My Day</button>
-            </form>
+def calories_burned(activity_type, duration_min, user):
+    # very simplified MET-based estimate
+    mets = {
+        "walking": 3.5,
+        "running": 9.8,
+        "cycling": 7.5,
+        "yoga": 2.5,
+        "strength": 6.0
+    }
+    met = mets.get(activity_type.lower(), 4.0)
+    weight_kg = user["weight_kg"]
+    kcal = (met * 3.5 * weight_kg / 200) * duration_min
+    return round(kcal, 1)
 
-            <div id="result" class="result"></div>
-        </div>
+# ---------- Pydantic models ----------
+class UserCreate(BaseModel):
+    name: str
+    dob: str  # ISO date YYYY-MM-DD
+    sex: str
+    height_cm: float
+    weight_kg: float
+    activity_level: Optional[str] = "moderate"
 
-        <!-- ANALYTICS TAB -->
-        <div id="analytics" class="content">
-            <h2 style="color: #667eea; margin-bottom: 15px;">Analytics</h2>
-            <p style="color: #666; text-align: center; padding: 40px;">📊 Coming soon! Track more days to see your progress graphs.</p>
-        </div>
-    </div>
+class ActivityCreate(BaseModel):
+    user_id: int
+    type: str
+    start_time: Optional[str] = None  # ISO datetime optional
+    duration_min: float
+    distance_km: Optional[float] = 0.0
+    steps: Optional[int] = 0
 
-    <script>
-        const foodDB = {
-            'egg': {c: 78, p: 6, cb: 0.6, f: 5},
-            'boiled egg': {c: 78, p: 6, cb: 0.6, f: 5},
-            'egg white': {c: 17, p: 3.6, cb: 0.2, f: 0.1},
-            'oats': {c: 389, p: 17, cb: 67, f: 7},
-            'banana': {c: 89, p: 1.1, cb: 23, f: 0.3},
-            'roti': {c: 71, p: 3, cb: 15, f: 0.4},
-            'chapati': {c: 71, p: 3, cb: 15, f: 0.4},
-            'bread': {c: 79, p: 4, cb: 14, f: 1},
-            'rice': {c: 130, p: 2.7, cb: 28, f: 0.3},
-            'brown rice': {c: 112, p: 2.6, cb: 24, f: 0.9},
-            'chicken': {c: 165, p: 31, cb: 0, f: 3.6},
-            'chicken breast': {c: 165, p: 31, cb: 0, f: 3.6},
-            'fish': {c: 100, p: 20, cb: 0, f: 1},
-            'salmon': {c: 208, p: 20, cb: 0, f: 13},
-            'dal': {c: 101, p: 9, cb: 18, f: 0.3},
-            'lentils': {c: 116, p: 9, cb: 20, f: 0.4},
-            'paneer': {c: 265, p: 18, cb: 1.2, f: 20},
-            'milk': {c: 42, p: 3.4, cb: 5, f: 1},
-            'curd': {c: 60, p: 3.5, cb: 4.7, f: 3.3},
-            'yogurt': {c: 60, p: 3.5, cb: 4.7, f: 3.3},
-            'cheese': {c: 402, p: 25, cb: 1.3, f: 33},
-            'apple': {c: 52, p: 0.3, cb: 14, f: 0.2},
-            'orange': {c: 47, p: 0.9, cb: 12, f: 0.3},
-            'banana ripe': {c: 89, p: 1.1, cb: 23, f: 0.3},
-            'mango': {c: 60, p: 0.8, cb: 15, f: 0.4},
-            'papaya': {c: 43, p: 0.5, cb: 11, f: 0.3},
-            'grapes': {c: 67, p: 0.7, cb: 17, f: 0.2},
-            'strawberry': {c: 32, p: 0.8, cb: 8, f: 0.3},
-            'watermelon': {c: 30, p: 0.6, cb: 8, f: 0.2},
-            'spinach': {c: 23, p: 2.7, cb: 3.6, f: 0.4},
-            'broccoli': {c: 34, p: 2.8, cb: 7, f: 0.4},
-            'carrot': {c: 41, p: 0.9, cb: 10, f: 0.2},
-            'tomato': {c: 18, p: 0.9, cb: 3.9, f: 0.2},
-            'onion': {c: 40, p: 1.1, cb: 9, f: 0.1},
-            'cucumber': {c: 16, p: 0.7, cb: 3.6, f: 0.1},
-            'potato': {c: 77, p: 2, cb: 17, f: 0.1},
-            'sweet potato': {c: 86, p: 1.6, cb: 20, f: 0.1},
-            'peas': {c: 81, p: 5.4, cb: 14, f: 0.4},
-            'almond': {c: 579, p: 21, cb: 22, f: 50},
-            'peanut': {c: 567, p: 26, cb: 16, f: 49},
-            'peanut butter': {c: 595, p: 25, cb: 21, f: 50},
-            'walnut': {c: 654, p: 15, cb: 14, f: 65},
-            'chana': {c: 364, p: 19, cb: 58, f: 7},
-            'chickpea': {c: 164, p: 9, cb: 27, f: 3},
-            'beans': {c: 127, p: 9, cb: 23, f: 0.5},
-            'oil': {c: 884, p: 0, cb: 0, f: 100},
-            'ghee': {c: 884, p: 0, cb: 0, f: 100},
-            'butter': {c: 717, p: 0.9, cb: 0.1, f: 81},
-            'honey': {c: 304, p: 0.3, cb: 82, f: 0},
-            'sugar': {c: 387, p: 0, cb: 100, f: 0},
-            'tea': {c: 2, p: 0.3, cb: 0.3, f: 0},
-            'coffee': {c: 0, p: 0.1, cb: 0, f: 0},
-            'milk shake': {c: 120, p: 4, cb: 21, f: 3},
-            'juice': {c: 46, p: 0.7, cb: 11, f: 0.1},
-            'whey protein': {c: 120, p: 25, cb: 2, f: 1},
-            'tofu': {c: 76, p: 8, cb: 1.9, f: 4.8},
-            'mutton': {c: 294, p: 25, cb: 0, f: 21},
-            'lamb': {c: 294, p: 25, cb: 0, f: 21},
-            'beef': {c: 250, p: 26, cb: 0, f: 15},
-            'pork': {c: 242, p: 27, cb: 0, f: 14},
-            'quinoa': {c: 368, p: 14, cb: 64, f: 6},
-            'barley': {c: 354, p: 12, cb: 73, f: 2},
-            'corn': {c: 86, p: 3.3, cb: 19, f: 1.2},
-            'pumpkin': {c: 26, p: 1, cb: 6.5, f: 0.1},
-            'beet': {c: 43, p: 1.6, cb: 10, f: 0.2},
-            'cabbage': {c: 25, p: 1.3, cb: 5.8, f: 0.1},
-            'cauliflower': {c: 25, p: 1.9, cb: 5, f: 0.3},
-            'bell pepper': {c: 31, p: 1, cb: 6, f: 0.3},
-            'mushroom': {c: 22, p: 3.1, cb: 3.3, f: 0.3},
-            'avocado': {c: 160, p: 2, cb: 9, f: 15},
-            'coconut': {c: 354, p: 3.3, cb: 15, f: 33},
-            'dates': {c: 282, p: 2.5, cb: 75, f: 0.4},
-            'dry fruit': {c: 280, p: 5, cb: 65, f: 0.5},
-            'kiwi': {c: 61, p: 1.1, cb: 15, f: 0.5},
-            'pineapple': {c: 50, p: 0.5, cb: 13, f: 0.1},
-            'guava': {c: 68, p: 2.6, cb: 14, f: 0.9},
-            'pomegranate': {c: 83, p: 1.7, cb: 19, f: 1.2},
-            'blueberry': {c: 57, p: 0.7, cb: 14, f: 0.3},
-            'blackberry': {c: 43, p: 1.4, cb: 10, f: 0.5},
-            'rasberry': {c: 52, p: 1.2, cb: 12, f: 0.7},
-            'melon': {c: 34, p: 0.8, cb: 8, f: 0.2}
-        };
+app = FastAPI(title="Fitness Tracker Agent AI - Prototype")
 
-        document.getElementById('mood_input').addEventListener('input', e => document.getElementById('moodVal').textContent = e.target.value);
-        document.getElementById('stress_input').addEventListener('input', e => document.getElementById('stressVal').textContent = e.target.value);
-        document.getElementById('energy_input').addEventListener('input', e => document.getElementById('energyVal').textContent = e.target.value);
+# ---------- Startup ----------
+@app.on_event("startup")
+def startup():
+    init_db()
 
-        window.onload = () => {
-            updateVisitors();
-            loadProfile();
-            document.getElementById('profileForm').addEventListener('submit', saveProfile);
-            document.getElementById('trackerForm').addEventListener('submit', submitTracker);
-        };
+# ---------- Endpoints ----------
+@app.post("/users")
+def create_user(u: UserCreate):
+    query_db("INSERT INTO users (name,dob,sex,height_cm,weight_kg,activity_level) VALUES (?,?,?,?,?,?)",
+             (u.name, u.dob, u.sex, u.height_cm, u.weight_kg, u.activity_level))
+    rows = query_db("SELECT * FROM users ORDER BY id DESC LIMIT 1", one=True)
+    return {"user": rows}
 
-        function updateVisitors() {
-            let v = localStorage.getItem('v') || 0;
-            v = parseInt(v) + 1;
-            localStorage.setItem('v', v);
-            document.getElementById('count').textContent = v;
-        }
+@app.get("/users/{user_id}")
+def get_user(user_id: int):
+    row = query_db("SELECT * FROM users WHERE id=?", (user_id,), one=True)
+    if not row:
+        raise HTTPException(404, "User not found")
+    user = dict(zip(["id","name","dob","sex","height_cm","weight_kg","activity_level"], row))
+    # compute derived
+    birth = datetime.fromisoformat(user["dob"])
+    age = int((datetime.utcnow() - birth).days / 365.25)
+    user["age"] = age
+    user["bmi"] = bmi(user["weight_kg"], user["height_cm"])
+    user["bmr"] = bmr_mifflin(user["weight_kg"], user["height_cm"], age, user["sex"])
+    return user
 
-        function showTab(t) {
-            document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            document.getElementById(t).classList.add('active');
-            event.target.classList.add('active');
-            
-            if (t === 'daily') checkProfile();
-        }
+@app.post("/activities")
+def add_activity(a: ActivityCreate):
+    user_row = query_db("SELECT * FROM users WHERE id=?", (a.user_id,), one=True)
+    if not user_row:
+        raise HTTPException(404, "User not found")
+    user = dict(zip(["id","name","dob","sex","height_cm","weight_kg","activity_level"], user_row))
+    start_time = a.start_time or datetime.utcnow().isoformat()
+    cals = calories_burned(a.type, a.duration_min, user)
+    query_db("""INSERT INTO activities (user_id,type,start_time,duration_min,distance_km,steps,calories)
+                VALUES (?,?,?,?,?,?,?)""", (a.user_id, a.type, start_time, a.duration_min, a.distance_km, a.steps, cals))
+    last = query_db("SELECT * FROM activities ORDER BY id DESC LIMIT 1", one=True)
+    return {"activity": last}
 
-        function loadProfile() {
-            const p = localStorage.getItem('p');
-            if (p) {
-                const obj = JSON.parse(p);
-                document.getElementById('gender').value = obj.g;
-                document.getElementById('height').value = obj.h;
-                document.getElementById('weight').value = obj.w;
-                document.getElementById('targetWeight').value = obj.tw;
-                document.getElementById('age').value = obj.a;
-                document.getElementById('activity').value = obj.ac;
-                document.getElementById('goal').value = obj.go;
-            }
-        }
+@app.get("/activities/user/{user_id}")
+def list_activities(user_id: int, days: Optional[int] = 7):
+    since = datetime.utcnow() - timedelta(days=days)
+    rows = query_db("SELECT * FROM activities WHERE user_id=? AND start_time>=? ORDER BY start_time DESC",
+                    (user_id, since.isoformat()))
+    cols = ["id","user_id","type","start_time","duration_min","distance_km","steps","calories"]
+    return [dict(zip(cols,r)) for r in rows]
 
-        function saveProfile(e) {
-            e.preventDefault();
-            
-            const g = document.getElementById('gender').value;
-            const h = parseFloat(document.getElementById('height').value);
-            const w = parseFloat(document.getElementById('weight').value);
-            const a = parseInt(document.getElementById('age').value);
-            const ac = document.getElementById('activity').value;
-            const go = document.getElementById('goal').value;
-
-            let bmr = g === 'male' ? (10*w) + (6.25*h) - (5*a) + 5 : (10*w) + (6.25*h) - (5*a) - 161;
-            const mult = {light: 1.375, moderate: 1.55, active: 1.725};
-            let cal = bmr * (mult[ac] || 1.55);
-            
-            if (go === 'loss') cal -= 500;
-            else if (go === 'gain') cal += 300;
-
-            const prot = g === 'male' ? w * 2 : w * 1.6;
-            const fats = (cal * 0.25) / 9;
-            const carbs = (cal - (prot * 4) - (fats * 9)) / 4;
-
-            localStorage.setItem('p', JSON.stringify({
-                g, h, w, tw: document.getElementById('targetWeight').value, a, ac, go,
-                cal: Math.round(cal), prot: Math.round(prot), carbs: Math.round(carbs), fats: Math.round(fats)
-            }));
-
-            document.getElementById('cal').textContent = Math.round(cal);
-            document.getElementById('prot').textContent = Math.round(prot);
-            document.getElementById('carb').textContent = Math.round(carbs);
-            document.getElementById('fat').textContent = Math.round(fats);
-            document.getElementById('targets').style.display = 'block';
-
-            setTimeout(() => {
-                document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
-                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-                document.getElementById('daily').classList.add('active');
-                document.querySelectorAll('.tab')[1].classList.add('active');
-                checkProfile();
-            }, 500);
-        }
-
-        function checkProfile() {
-            if (!localStorage.getItem('p')) {
-                document.getElementById('warning').style.display = 'block';
-            } else {
-                document.getElementById('warning').style.display = 'none';
-            }
-        }
-
-        function showProfile() {
-            showTab({target: document.querySelectorAll('.tab')[0]}, 'profile');
-        }
-
-        function analyzeFood() {
-            const foods = document.getElementById('foodList').value.toLowerCase().split(',');
-            let tc = 0, tp = 0, tcb = 0, tf = 0;
-            let foundItems = [];
-
-            foods.forEach(f => {
-                f = f.trim();
-                if (!f) return;
-                
-                // Extract quantity
-                const qtyMatch = f.match(/^(\d+(?:\.\d+)?)\s*(g|ml|cup|piece)?/);
-                let qty = 1;
-                let unit = 'piece';
-                
-                if (qtyMatch) {
-                    qty = parseFloat(qtyMatch[1]);
-                    unit = qtyMatch[2] || 'piece';
-                    f = f.substring(qtyMatch[0].length).trim();
-                }
-
-                // Search food database
-                let found = false;
-                for (let key in foodDB) {
-                    if (f.includes(key) || key.includes(f.split(' ')[0])) {
-                        let multiplier = qty;
-                        
-                        // Convert units to 100g/100ml base
-                        if (unit === 'g') multiplier = qty / 100;
-                        else if (unit === 'ml') multiplier = qty / 100;
-                        else if (unit === 'cup') multiplier = qty * 240 / 100;
-                        else if (unit === 'piece') multiplier = qty; // 1 piece = standard serving
-
-                        tc += foodDB[key].c * multiplier;
-                        tp += foodDB[key].p * multiplier;
-                        tcb += foodDB[key].cb * multiplier;
-                        tf += foodDB[key].f * multiplier;
-                        
-                        foundItems.push(`✓ ${qty}${unit} ${key}`);
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    foundItems.push(`❓ ${qty}${unit} ${f} (not in database)`);
-                }
-            });
-
-            document.getElementById('fcal').textContent = Math.round(tc);
-            document.getElementById('fprot').textContent = Math.round(tp);
-            document.getElementById('fcarb').textContent = Math.round(tcb);
-            document.getElementById('ffat').textContent = Math.round(tf);
-            
-            // Show found items
-            const foodList = document.createElement('div');
-            foodList.style.cssText = 'background: #f0f0f0; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px;';
-            foodList.innerHTML = '<strong>Items Found:</strong><br>' + foundItems.join('<br>');
-            
-            const oldList = document.getElementById('foodRes').querySelector('[style*="background: #f0f0f0"]');
-            if (oldList) oldList.remove();
-            document.getElementById('foodRes').appendChild(foodList);
-            
-            document.getElementById('foodRes').classList.add('show');
-        }
-
-        function useFoodData() {
-            document.getElementById('cal_input').value = document.getElementById('fcal').textContent;
-            document.getElementById('prot_input').value = document.getElementById('fprot').textContent;
-            document.getElementById('carb_input').value = document.getElementById('fcarb').textContent;
-            document.getElementById('fat_input').value = document.getElementById('ffat').textContent;
-            alert('✅ Food data added!');
-        }
-
-        function submitTracker(e) {
-            e.preventDefault();
-
-            const cal = parseFloat(document.getElementById('cal_input').value);
-            const prot = parseFloat(document.getElementById('prot_input').value);
-            const mood = parseInt(document.getElementById('mood_input').value);
-            const stress = parseInt(document.getElementById('stress_input').value);
-            const energy = parseInt(document.getElementById('energy_input').value);
-            const wo = document.getElementById('workout_input').value === 'yes';
-
-            let score = (mood * 10 + (11 - stress) * 10 + energy * 10) / 3;
-            if (wo) score += 20;
-
-            const html = `
-                <div class="score-box">
-                    <h2>${Math.round(score)}/100</h2>
-                    <p>Today's Score</p>
-                </div>
-                <div class="title">📊 Nutrition</div>
-                <div class="metric">🍽️ Calories: ${cal} kcal</div>
-                <div class="metric">💪 Protein: ${prot}g</div>
-                <div class="metric">🍚 Carbs: ${document.getElementById('carb_input').value}g</div>
-                <div class="metric">🥑 Fats: ${document.getElementById('fat_input').value}g</div>
-                <div class="title">🧠 Mental</div>
-                <div class="metric">😊 Mood: ${mood}/10 | 😰 Stress: ${stress}/10 | ⚡ Energy: ${energy}/10</div>
-                <div class="title">💪 Fitness</div>
-                <div class="metric">🏋️ Workout: ${wo ? '✅ Yes (' + document.getElementById('duration_input').value + ' min)' : '❌ No'}</div>
-                <div class="metric">📚 Study: ${document.getElementById('study_input').value} hours</div>
-            `;
-
-            document.getElementById('result').innerHTML = html;
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('trackerForm').reset();
-            document.getElementById('result').scrollIntoView({behavior: 'smooth'});
-        }
-    </script>
-</body>
-</html>
+# Simple chat-style assistant
+@app.post("/assistant/{user_id}")
+def assistant_query(user_id: int, payload: dict):
+    # payload: {"query": "How many calories did I burn today?"}
+    q = payload.get("query","").lower()
+    if "calorie" in q or "burn" in q:
+        rows = query_db("SELECT SUM(calories) FROM activities WHERE user_id=? AND start_time>=?",
+                        (user_id, datetime.utcnow().replace(hour=0,minute=0,second=0).isoformat()), one=True)
+        total = rows[0] if rows and rows[0] else 0
+        return {"reply": f"You burned approximately {round(total,1)} kcal today from logged activities."}
+    if "recommend" in q or "workout" in q:
+        # very simple recommender (rule-based)
+        user_row = query_db("SELECT * FROM users WHERE id=?", (user_id,), one=True)
+        if not user_row:
+            raise HTTPException(404, "User not found")
+        user = dict(zip(["id","name","dob","sex","height_cm","weight_kg","activity_level"], user_row))
+        bmi_v = bmi(user["weight_kg"], user["height_cm"])
+        if bmi_v >= 25:
+            plan = "30 min brisk walk + 20 min bodyweight strength (3x/week)."
+        elif bmi_v < 18.5:
+            plan = "Focus on caloric surplus + strength 3x/week."
+        else:
+            plan = "Mix of cardio 3x/week and strength 2x/week."
+        return {"reply": f"Recommended: {plan}"}
+    return {"reply": "Sorry - I don't understand. Try: 'How many calories did I burn today?' or 'Recommend a workout'."}
